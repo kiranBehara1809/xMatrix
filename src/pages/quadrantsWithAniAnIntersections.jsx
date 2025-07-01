@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   alpha,
+  Avatar,
   Box,
   Button,
   Collapse,
@@ -15,6 +16,74 @@ import CircleIcon from "@mui/icons-material/Circle";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 import QuadrantButtons from "./quadrantButtons";
 
+const VerticalDivider = () => (
+  <div
+    style={{
+      width: "1px",
+      backgroundColor: "#000",
+      height: "100%",
+      margin: "0 20px",
+    }}
+  />
+);
+
+const UserDetails = () => {
+  const userName = localStorage.getItem("userName");
+  return (
+    <Box
+      sx={{
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "auto",
+        height: "20px",
+        borderRadius: "8px",
+        padding: "8px 12px",
+        boxShadow:
+          "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
+      }}
+    >
+      <Avatar
+        sx={{ width: 25, height: 25, backgroundColor: "#1976d2" }}
+        variant="rounded"
+      >
+        {userName?.split("")[0].toUpperCase()}
+      </Avatar>
+      <Typography
+        sx={{
+          marginLeft: "8px",
+          fontSize: "14px",
+          color: "#000",
+          fontWeight: "bold",
+        }}
+      >
+        {userName
+          ?.toLowerCase()
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")}
+      </Typography>
+      <VerticalDivider />
+      <Typography
+        sx={{
+          fontSize: "14px",
+          color: "#000",
+          fontWeight: "bold",
+          cursor: "pointer",
+        }}
+        onClick={() => {
+          localStorage.removeItem("userName");
+          window.location.href = "/login";
+        }}
+      >
+        Logout
+      </Typography>
+    </Box>
+  );
+};
 const ProjectHeader = () => {
   return (
     <>
@@ -23,9 +92,13 @@ const ProjectHeader = () => {
           position: "absolute",
           top: "10px",
           left: "10px",
-          fontSize: "18px",
+          fontSize: "24px",
           fontWeight: "bold",
           color: "#000",
+          padding: "10px 16px",
+          borderRadius: "8px",
+          boxShadow:
+            "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
         }}
       >
         X-Matrix
@@ -152,6 +225,15 @@ const QuadrantsWithAniAnIntersections = () => {
   const [show, setShow] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const [initialRotation, setInitialRotation] = useState(0);
+  const [showEverything, setShowEverything] = useState(true);
+
+  useEffect(() => {
+    const userLoggedIn = localStorage.getItem("userName");
+    if (!userLoggedIn) {
+      setShowEverything(false);
+      window.location.href = "/login";
+    }
+  }, []);
 
   const cellWidth = 24;
   const cellHeight = 24;
@@ -185,7 +267,7 @@ const QuadrantsWithAniAnIntersections = () => {
       listPosition: {
         top: "50%",
         left: "100%",
-        transform: "translate3d(1%,52%,0) rotate(-90deg)",
+        transform: "translate3d(1%,48%,0) rotate(-90deg)",
         transformOrigin: "left top",
         width: 240,
         height: "auto",
@@ -282,181 +364,197 @@ const QuadrantsWithAniAnIntersections = () => {
     },
   ];
 
+  if (!showEverything) {
+    return null;
+  }
+
   return (
     <>
-      <ProjectHeader />
-      <QuadrantButtons emitSelectedRotation={handleRotation} />
-      <LegendComponent />
       <Box
         sx={{
-          position: "relative",
-          width: 250,
-          height: 250,
-          margin: "auto",
-          border: "2px solid #ccc",
-          borderRadius: "8px",
-          overflow: "visible",
-          boxShadow: 1,
-          transform: `rotate(${initialRotation}deg)`,
-          transition: "transform 1.5s ease-in-out",
-          //   animation: rotating
-          //     ? `${rotateAnimation} 1s forwards`
-          //     : `${reverseRotateAnimation} 1s forwards`,
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
         }}
       >
-        {/* 🧭 Render Quadrants */}
-        {rotatedQuads.map((quad, index) => {
-          const position = quad.rotatedPosition;
-          const config = quadrantConfigs[position];
-          if (!config) return null;
+        <UserDetails />
+        <ProjectHeader />
+        <QuadrantButtons emitSelectedRotation={handleRotation} />
+        <LegendComponent />
+        <Box
+          sx={{
+            position: "relative",
+            width: 250,
+            height: 250,
+            margin: "auto",
+            border: "2px solid #ccc",
+            borderRadius: "8px",
+            overflow: "visible",
+            boxShadow: 1,
+            transform: `rotate(${initialRotation}deg)`,
+            transition: "transform 1.5s ease-in-out",
+            //   animation: rotating
+            //     ? `${rotateAnimation} 1s forwards`
+            //     : `${reverseRotateAnimation} 1s forwards`,
+          }}
+        >
+          {/* 🧭 Render Quadrants */}
+          {rotatedQuads.map((quad, index) => {
+            const position = quad.rotatedPosition;
+            const config = quadrantConfigs[position];
+            if (!config) return null;
 
-          return (
-            <React.Fragment key={index}>
-              <Box
-                sx={{
-                  ...triangleStyle,
-                  backgroundColor: alpha(quad.color, 0.7),
-                  clipPath: config.clipPath,
-                }}
-              />
-              <Typography
-                sx={{
-                  ...labelStyle,
-                  ...config.labelPosition,
-                  textAlign: "center",
-                  p: 0.5,
-                  maxWidth: "75px",
-                  transform: `translate(-50%, -50%) rotate(${-initialRotation}deg)`,
-                  transition: "transform 1.5s ease-in-out",
-                }}
-              >
-                {quad.quadrantName}
-              </Typography>
-              <Collapse in={show}>
+            return (
+              <React.Fragment key={index}>
+                <Box
+                  sx={{
+                    ...triangleStyle,
+                    backgroundColor: alpha(quad.color, 0.7),
+                    clipPath: config.clipPath,
+                  }}
+                />
+                <Typography
+                  sx={{
+                    ...labelStyle,
+                    ...config.labelPosition,
+                    textAlign: "center",
+                    p: 0.5,
+                    maxWidth: "75px",
+                    transform: `translate(-50%, -50%) rotate(${-initialRotation}deg)`,
+                    transition: "transform 1.5s ease-in-out",
+                  }}
+                >
+                  {quad.quadrantName}
+                </Typography>
+                <Collapse in={show}>
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      ...config.listPosition,
+                      backgroundColor: "#fff",
+                      border: "1px solid #ccc",
+                      borderRadius: 2,
+                      boxShadow: 3,
+                      fontSize: "12px",
+
+                      "&::-webkit-scrollbar": { display: "none" },
+                    }}
+                  >
+                    {quad.rowItems.map((item) => (
+                      <React.Fragment key={item.rowId}>
+                        <Typography
+                          sx={{
+                            color: "#000",
+                            fontSize: "11px",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            padding: "3px",
+                            minHeight: "18px",
+                            maxHeight: "18px",
+                            ...item.styles,
+                          }}
+                        >
+                          {item.rowName}
+                        </Typography>
+                        <Divider />
+                      </React.Fragment>
+                    ))}
+                  </Box>
+                </Collapse>
+              </React.Fragment>
+            );
+          })}
+
+          {/* 🔲 Intersection Grids (No mappings used!) */}
+          {intersectionPairs.map(({ row, col, style }, i) => {
+            const rowQ = quadrantMap[row];
+            const colQ = quadrantMap[col];
+            if (!rowQ || !colQ) return null;
+
+            const rowItems = rowQ.rowItems || [];
+            const colItems = colQ.rowItems || [];
+
+            return (
+              <Fade in={show} timeout={400} key={i}>
                 <Box
                   sx={{
                     position: "absolute",
-                    ...config.listPosition,
-                    backgroundColor: "#fff",
-                    border: "1px solid #ccc",
-                    borderRadius: 2,
-                    boxShadow: 3,
-                    fontSize: "12px",
-
-                    "&::-webkit-scrollbar": { display: "none" },
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${colItems.length}, ${cellWidth}px)`,
+                    gridTemplateRows: `repeat(${rowItems.length}, ${cellHeight}px)`,
+                    ...style,
                   }}
                 >
-                  {quad.rowItems.map((item) => (
-                    <React.Fragment key={item.rowId}>
-                      <Typography
-                        sx={{
-                          color: "#000",
-                          fontSize: "11px",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          padding: "3px",
-                          minHeight: "18px",
-                          maxHeight: "18px",
-                          ...item.styles,
+                  {rowItems.map((rowItem) =>
+                    colItems.map((colItem) => (
+                      <Box
+                        onClick={(e) => {
+                          setAnchorEl(e.currentTarget);
                         }}
+                        key={`${rowItem.rowId}-${colItem.rowId}`}
+                        sx={{
+                          border: "0.5px dashed #ccc",
+                          width: cellWidth,
+                          height: cellHeight,
+                          fontSize: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          cursor: "pointer",
+                          justifyContent: "center",
+                          backgroundColor: alpha("#000", 0.01),
+                        }}
+                        title={`${rowItem.rowName?.split(" ")[0]} X ${
+                          colItem.rowName?.split(" ")[0]
+                        }`}
                       >
-                        {item.rowName}
-                      </Typography>
-                      <Divider />
-                    </React.Fragment>
-                  ))}
+                        {getIntersectionValue(rowItem, colItem)}
+                      </Box>
+                    ))
+                  )}
                 </Box>
-              </Collapse>
-            </React.Fragment>
-          );
-        })}
+              </Fade>
+            );
+          })}
+        </Box>
 
-        {/* 🔲 Intersection Grids (No mappings used!) */}
-        {intersectionPairs.map(({ row, col, style }, i) => {
-          const rowQ = quadrantMap[row];
-          const colQ = quadrantMap[col];
-          if (!rowQ || !colQ) return null;
-
-          const rowItems = rowQ.rowItems || [];
-          const colItems = colQ.rowItems || [];
-
-          return (
-            <Fade in={show} timeout={400} key={i}>
-              <Box
-                sx={{
-                  position: "absolute",
-                  display: "grid",
-                  gridTemplateColumns: `repeat(${colItems.length}, ${cellWidth}px)`,
-                  gridTemplateRows: `repeat(${rowItems.length}, ${cellHeight}px)`,
-                  ...style,
-                }}
-              >
-                {rowItems.map((rowItem) =>
-                  colItems.map((colItem) => (
-                    <Box
-                      onClick={(e) => {
-                        setAnchorEl(e.currentTarget);
-                      }}
-                      key={`${rowItem.rowId}-${colItem.rowId}`}
-                      sx={{
-                        border: "0.5px dashed #ccc",
-                        width: cellWidth,
-                        height: cellHeight,
-                        fontSize: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        cursor: "pointer",
-                        justifyContent: "center",
-                        backgroundColor: alpha("#000", 0.01),
-                      }}
-                      title={`${rowItem.rowName?.split(" ")[0]} X ${
-                        colItem.rowName?.split(" ")[0]
-                      }`}
-                    >
-                      {getIntersectionValue(rowItem, colItem)}
-                    </Box>
-                  ))
-                )}
-              </Box>
-            </Fade>
-          );
-        })}
+        <Popover
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          onClose={() => setAnchorEl(null)}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+        >
+          {Object.entries(MAPPING).map(([key, value]) => (
+            <Box
+              key={key}
+              sx={{
+                display: "flex",
+                justifyContent: "flex-start",
+                alignItems: "center",
+                padding: 1,
+                cursor: "pointer",
+                "&:hover": {
+                  backgroundColor: alpha("#000", 0.1),
+                },
+              }}
+              onClick={() => setAnchorEl(null)}
+            >
+              <span style={{ paddingRight: "8px", fontSize: "16px" }}>
+                {value.icon}
+              </span>
+              <span style={{ textAlign: "start", fontSize: "12px" }}>
+                {value.label}
+              </span>
+            </Box>
+          ))}
+        </Popover>
       </Box>
-
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-      >
-        {Object.entries(MAPPING).map(([key, value]) => (
-          <Box
-            key={key}
-            sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              padding: 1,
-              cursor: "pointer",
-              "&:hover": {
-                backgroundColor: alpha("#000", 0.1),
-              },
-            }}
-            onClick={() => setAnchorEl(null)}
-          >
-            <span style={{ paddingRight: "8px", fontSize: "16px" }}>
-              {value.icon}
-            </span>
-            <span style={{ textAlign: "start", fontSize: "12px" }}>
-              {value.label}
-            </span>
-          </Box>
-        ))}
-      </Popover>
     </>
   );
 };

@@ -39,6 +39,9 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
     position: "absolute",
     bottom: "10px",
     right: "10px",
+    borderRadius: "12px",
+    boxShadow:
+      "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
   };
 
   const baseButtonStyle = {
@@ -58,60 +61,74 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
   };
 
   return (
-    <div style={containerStyle}>
-      {quadrantColors.map((colors, index) => {
-        const isSelected = selectedIndex === index;
-        const buttonStyle = {
-          ...baseButtonStyle,
-          boxShadow: isSelected ? "0 0 0 3px #000 inset" : "none",
-          transform: isSelected ? "scale(1.5)" : "scale(1)",
-        };
+    <>
+      <div style={containerStyle}>
+        <span
+          style={{
+            fontSize: "13px",
+            color: "#000",
+            whiteSpace: "break-spaces",
+            width:"120px"
+          }}
+        >
+          Switch Views or Change orientation
+        </span>
+        {quadrantColors.map((colors, index) => {
+          const isSelected = selectedIndex === index;
+          const buttonStyle = {
+            ...baseButtonStyle,
+            boxShadow: isSelected ? "0 0 0 3px #000 inset" : "none",
+            transform: isSelected ? "scale(1.5)" : "scale(1)",
+          };
 
-        return (
-          <div
-            key={index}
-            style={buttonStyle}
-            onClick={() => {
-              emitSelectedRotation(index);
-              setSelectedIndex(index);
-            }}
-          >
-            {/* Top triangle */}
-            <div
-              style={{
-                ...triangleStyle,
-                backgroundColor: colors.top,
-                clipPath: "polygon(0% 0%, 100% 0%, 50% 50%)",
-              }}
-            />
-            {/* Right triangle */}
-            <div
-              style={{
-                ...triangleStyle,
-                backgroundColor: colors.right,
-                clipPath: "polygon(100% 0%, 100% 100%, 50% 50%)",
-              }}
-            />
-            {/* Bottom triangle */}
-            <div
-              style={{
-                ...triangleStyle,
-                backgroundColor: colors.bottom,
-                clipPath: "polygon(100% 100%, 0% 100%, 50% 50%)",
-              }}
-            />
-            {/* Left triangle */}
-            <div
-              style={{
-                ...triangleStyle,
-                backgroundColor: colors.left,
-                clipPath: "polygon(0% 100%, 0% 0%, 50% 50%)",
-              }}
-            />
-          </div>
-        );
-      })}
-    </div>
+          return (
+            <>
+              <div
+                key={index}
+                style={buttonStyle}
+                onClick={() => {
+                  emitSelectedRotation(index);
+                  setSelectedIndex(index);
+                }}
+              >
+                {/* Top triangle */}
+                <div
+                  style={{
+                    ...triangleStyle,
+                    backgroundColor: colors.top,
+                    clipPath: "polygon(0% 0%, 100% 0%, 50% 50%)",
+                  }}
+                />
+                {/* Right triangle */}
+                <div
+                  style={{
+                    ...triangleStyle,
+                    backgroundColor: colors.right,
+                    clipPath: "polygon(100% 0%, 100% 100%, 50% 50%)",
+                  }}
+                />
+                {/* Bottom triangle */}
+                <div
+                  style={{
+                    ...triangleStyle,
+                    backgroundColor: colors.bottom,
+                    clipPath: "polygon(100% 100%, 0% 100%, 50% 50%)",
+                  }}
+                />
+                {/* Left triangle */}
+                <div
+                  style={{
+                    ...triangleStyle,
+                    backgroundColor: colors.left,
+                    clipPath: "polygon(0% 100%, 0% 0%, 50% 50%)",
+                  }}
+                />
+              </div>
+            </>
+          );
+        })}
+      </div>
+    </>
   );
 };
 

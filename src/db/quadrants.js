@@ -175,6 +175,11 @@ const QUADRANTS = {
           rowType: "quandrantRow",
         },
         {
+          rowName: "",
+          rowId: "160917d4-1958-4cff-a7b3-c3539f170b2d",
+          rowType: "quandrantRow",
+        },
+        {
           rowName: "John Dyer",
           rowId: "4d10b9c1-268b-4f0a-a803-5104b6871a7d",
           rowType: "quandrantOwner",
