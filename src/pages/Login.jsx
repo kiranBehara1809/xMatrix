@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -82,6 +82,10 @@ const Login = () => {
   const loginToast = () => toast("Welcome Back!");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    localStorage.removeItem("userName");
+  }, []);
 
   const loginHandler = () => {
     if (userName?.length !== 0 && password?.length !== 0) {

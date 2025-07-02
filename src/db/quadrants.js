@@ -174,11 +174,11 @@ const QUADRANTS = {
           rowId: "4d8238a5-82c9-45a7-b746-c8183ba7edfd",
           rowType: "quandrantRow",
         },
-        {
-          rowName: "",
-          rowId: "160917d4-1958-4cff-a7b3-c3539f170b2d",
-          rowType: "quandrantRow",
-        },
+        // {
+        //   rowName: "",
+        //   rowId: "160917d4-1958-4cff-a7b3-c3539f170b2d",
+        //   rowType: "quandrantRow",
+        // },
         {
           rowName: "John Dyer",
           rowId: "4d10b9c1-268b-4f0a-a803-5104b6871a7d",
@@ -198,6 +198,11 @@ const QUADRANTS = {
           rowName: "Dimitris Kazanakis",
           rowId: "223f204c-ca11-4ffd-91f8-1178adc345d0",
           rowType: "quandrantOwner",
+        },
+        {
+          rowName: "",
+          rowId: "1ebcf7e4-1707-60d7-b8fc-17f1bd228ca3",
+          rowType: "quandrantRow",
         },
       ],
     },

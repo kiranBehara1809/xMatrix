@@ -1,10 +1,10 @@
 import React, { use, useEffect, useState } from "react";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Tooltip } from "@mui/material";
 import RedoIcon from "@mui/icons-material/Redo";
 import UndoIcon from "@mui/icons-material/Undo";
 
-const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
+const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const indexes = [0, 1, 2, 3];
@@ -114,12 +114,25 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
             borderRadius: "8px",
           }}
         >
-          <Button variant="contained" onClick={() => backwardClick()}>
-            <UndoIcon />
-          </Button>
-          <Button variant="contained" onClick={() => forwardClick()}>
-            <RedoIcon />
-          </Button>
+          <Tooltip title="Rotate Left" placement="bottom" arrow>
+            <Button
+              disabled={!show}
+              variant="contained"
+              onClick={() => backwardClick()}
+            >
+              <UndoIcon />
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Rotate Right" placement="bottom" arrow>
+            <Button
+              disabled={!show}
+              variant="contained"
+              onClick={() => forwardClick()}
+            >
+              <RedoIcon />
+            </Button>
+          </Tooltip>
         </Box>
 
         {/* {quadrantColors.map((colors, index) => {

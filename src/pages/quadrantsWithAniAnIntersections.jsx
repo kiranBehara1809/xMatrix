@@ -8,6 +8,8 @@ import {
   Divider,
   Fade,
   Popover,
+  TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { keyframes } from "@emotion/react";
@@ -15,6 +17,8 @@ import { QUADRANTS } from "../db/quadrants";
 import CircleIcon from "@mui/icons-material/Circle";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 import QuadrantButtons from "./quadrantButtons";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 
 const VerticalDivider = () => (
   <div
@@ -39,7 +43,7 @@ const UserDetails = () => {
         alignItems: "center",
         justifyContent: "center",
         width: "auto",
-        height: "20px",
+        height: "30px",
         borderRadius: "8px",
         padding: "8px 12px",
         boxShadow:
@@ -153,6 +157,7 @@ const LegendComponent = () => {
 const MAPPING = {
   RL: {
     label: "Relationship",
+    value: "RL",
     icon: (
       <CircleIcon
         fontSize="small"
@@ -162,6 +167,7 @@ const MAPPING = {
   },
   PR: {
     label: "Primary Responsibility",
+    value: "PR",
     icon: (
       <PanoramaFishEyeIcon
         fontSize="small"
@@ -171,6 +177,7 @@ const MAPPING = {
   }, // PRIMARY RESPONSIBILITY
   SR: {
     label: "Secondary Responsibility",
+    value: "SR",
     icon: (
       <CircleIcon
         fontSize="small"
@@ -206,17 +213,32 @@ const labelStyle = {
   transform: "translate(-50%, -50%)",
 };
 
-const positionOrder = ["top", "right", "bottom", "left"];
-
 const QuadrantsWithAniAnIntersections = () => {
-  const [rotationIndex, setRotationIndex] = useState(0);
   const [show, setShow] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [addNewAnchorEl, setAddNewAnchorEl] = useState(null);
+  const [isOwnerAdding, setIsOwnerAdding] = useState(false);
+  const [newRowText, setNewRowText] = useState("");
   const [initialRotation, setInitialRotation] = useState(0);
   const [showEverything, setShowEverything] = useState(true);
   const [rotatedQuads, setRotatedQuads] = useState([]);
+  const [dynamicPlacementsOfPlots, setDynamicPlacementsOfPlots] = useState({
+    "top-listitems": null,
+    "bottom-listitems": null,
+    "left-listitems": null,
+    "right-listitems": null,
+  });
+  const [tempVars, setTempVars] = useState({
+    selectedRow: null,
+    selectedCol: null,
+    selectedPopoverValue: null,
+  });
 
   useEffect(() => {
+    handleRotation(2);
+    setTimeout(() => {
+      handleRotation(0);
+    }, 1050);
     const userLoggedIn = localStorage.getItem("userName");
     if (!userLoggedIn) {
       setShowEverything(false);
@@ -231,19 +253,151 @@ const QuadrantsWithAniAnIntersections = () => {
   );
 
   useEffect(() => {
-    setRotatedQuads(rotateQuadrants(quadrantsForThisComponent, rotationIndex));
+    setRotatedQuads((prev) => {
+      if (prev.length > 0) {
+        return rotateQuadrants(prev);
+      }
+      return rotateQuadrants(quadrantsForThisComponent);
+    });
+    getDynamicPlacement();
   }, [initialRotation]);
-  //   const rotatedQuads = rotateQuadrants(
-  //     quadrantsForThisComponent,
-  //     rotationIndex
-  //   );
+
+  useEffect(() => {
+    const userName = localStorage.getItem("userName");
+    if (userName === "reader") {
+      return;
+    }
+    const { selectedRow, selectedCol, selectedPopoverValue } = tempVars;
+
+    if (selectedRow && selectedCol && selectedPopoverValue) {
+      const rowId = selectedRow.rowId;
+      const colId = selectedCol.rowId;
+      const intersectionType = selectedPopoverValue.value;
+      setRotatedQuads((prevQuads) => {
+        let finalOuptut = prevQuads.map((quad) => {
+          const updatedRowItems = quad.rowItems.map((item) => {
+            // Only update if this is one of the selected rows
+            if (item.rowId !== rowId && item.rowId !== colId) {
+              return item;
+            }
+
+            let newIntersections = [...(item.intersections || [])];
+            const existingIndex = newIntersections.findIndex(
+              (i) => i.rowId === rowId || i.rowId === colId
+            );
+
+            // If exists, update type
+            if (existingIndex !== -1) {
+              newIntersections[existingIndex] = {
+                ...newIntersections[existingIndex],
+                type: intersectionType === "EMPTY" ? "" : intersectionType,
+              };
+            } else {
+              // Else push new intersection
+              newIntersections.push({
+                rowId: item.rowId === rowId ? colId : rowId,
+                type: intersectionType === "EMPTY" ? "" : intersectionType,
+              });
+            }
+
+            return {
+              ...item,
+              intersections: newIntersections,
+            };
+          });
+
+          return {
+            ...quad,
+            rowItems: updatedRowItems,
+          };
+        });
+        return rotateQuadrants(finalOuptut);
+      });
+
+      closePopover();
+    }
+  }, [tempVars]);
 
   const quadrantMap = Object.fromEntries(
-    rotatedQuads.map((q) => [q.rotatedPosition, q])
+    rotatedQuads.map((q) => [q.defaultPostion, q])
   );
 
+  const getDynamicPlacement = () => {
+    const placements = [
+      "top-listitems",
+      "bottom-listitems",
+      "left-listitems",
+      "right-listitems",
+    ];
+    placements.map((y) => {
+      let el = document.getElementById(y);
+      if (el) {
+        const { top, bottom, left, right } = el.getBoundingClientRect();
+        setDynamicPlacementsOfPlots((prev) => {
+          return {
+            ...prev,
+            [y]: { top, right, bottom, left },
+          };
+        });
+      }
+    });
+  };
+
+  const latestRowItems = (quad, newRowObj) => {
+    if (quad.updatedPosition !== "bottom") {
+      return quad.rowItems;
+    }
+    if (quad.defaultPostion === "top" || quad.defaultPostion === "left") {
+      return [...quad.rowItems, newRowObj];
+    }
+    if (quad.defaultPostion === "right" && isOwnerAdding) {
+      let arr = quad.rowItems;
+      return [
+        ...arr.slice(0, quad?.rowItems?.length - 1),
+        newRowObj,
+        ...arr.slice(quad?.rowItems?.length - 1),
+      ];
+    }
+    if (quad.defaultPostion === "right" && !isOwnerAdding) {
+      return [newRowObj, ...quad.rowItems];
+    }
+  };
+
+  const handleSaveOfNewRow = () => {
+    const inputValue = newRowText;
+    setRotatedQuads((prevQuads) => {
+      const newRowObj = {
+        rowName: inputValue,
+        rowId: crypto.randomUUID(),
+        rowType: isOwnerAdding ? "quandrantOwner" : "quandrantRow",
+      };
+      let finalOutput = prevQuads?.map((quad) => {
+        return {
+          ...quad,
+          rowItems:
+            quad.updatedPosition === "bottom"
+              ? latestRowItems(quad, newRowObj)
+              : quad.rowItems,
+        };
+      });
+      return rotateQuadrants(finalOutput);
+    });
+    setAddNewAnchorEl(null);
+    setNewRowText("");
+    setIsOwnerAdding(false);
+  };
+
+  const closePopover = () => {
+    setAnchorEl(null);
+    setTempVars((prev) => ({
+      ...prev,
+      selectedRow: null,
+      selectedCol: null,
+      selectedPopoverValue: null,
+    }));
+  };
+
   const getUpdatedPosition = (quadrantObj) => {
-    console.log(quadrantObj.defaultPostion, initialRotation);
     if (quadrantObj.defaultPostion === "top" && initialRotation === 0) {
       return "top";
     }
@@ -298,17 +452,13 @@ const QuadrantsWithAniAnIntersections = () => {
     return quadrantObj.defaultPostion;
   };
 
-  const rotateQuadrants = (quads, rotationIndex) => {
+  const rotateQuadrants = (quads) => {
     let a = quads.map((q) => {
-      const currentIndex = positionOrder.indexOf(q.defaultPostion);
-      const newIndex = (currentIndex + rotationIndex) % 4;
       return {
         ...q,
-        rotatedPosition: positionOrder[newIndex],
         updatedPosition: getUpdatedPosition(q),
       };
     });
-    console.log("rotateQuadrants", a);
     return a;
   };
 
@@ -322,19 +472,20 @@ const QuadrantsWithAniAnIntersections = () => {
         transform: "translateX(-50%)",
         width: 240,
         maxHeight: 200,
-        overflowY: "auto",
+        // overflowY: "auto",
       },
     },
     right: {
       clipPath: "polygon(100% 0, 100% 100%, 50% 50%)",
       labelPosition: { top: "50%", left: "80%" },
       listPosition: {
-        top: "50%",
-        left: "100%",
-        transform: "translate3d(1%,48%,0) rotate(-90deg)",
+        top: "38%",
+        left: "101.5%",
+        transform: "translate3d(1%,60%,0) rotate(-90deg)",
         transformOrigin: "left top",
         width: 240,
-        height: "auto",
+        maxHeight: 250,
+        overflowY: "auto",
       },
     },
     bottom: {
@@ -353,11 +504,15 @@ const QuadrantsWithAniAnIntersections = () => {
       labelPosition: { top: "50%", left: "20%" },
       listPosition: {
         top: "50%",
-        right: "100%",
+        right: "101.5%",
         transform: "translate3d(-55%, -95%, 0) rotate(-90deg)",
         transformOrigin: "right top",
         width: 240,
+        maxWidth: 240,
+        // maxWidth: 210,
         height: "auto",
+        maxHeight: 250,
+        overflowY: "auto",
       },
     },
   };
@@ -403,27 +558,32 @@ const QuadrantsWithAniAnIntersections = () => {
       row: "top",
       col: "right",
       style: {
-        top: `-${(quadrantMap.top?.rowItems?.length ?? 0) * cellHeight + 5}px`,
+        // top: `-${(quadrantMap.top?.rowItems?.length ?? 0) * cellHeight + 5}px`,
+        bottom: dynamicPlacementsOfPlots["right-listitems"]?.top - 32,
+        // top: "-48%",
         left: "100%",
-        transform: "translateX(4px)",
+        transform: "translate3d(8px, -5px, 0)",
       },
     },
     {
       row: "top",
       col: "left",
       style: {
-        top: `-${(quadrantMap.left?.rowItems?.length ?? 0) * cellHeight + 5}px`,
+        // top: `-${(quadrantMap.left?.rowItems?.length ?? 0) * cellHeight + 5}px`,
+        // top: "-48%",
+        bottom: dynamicPlacementsOfPlots["right-listitems"]?.top - 30,
         right: "100%",
-        transform: "translateX(-4px)",
+        transform: "translateX(-8px)",
       },
     },
     {
       row: "bottom",
       col: "left",
       style: {
-        top: "100%",
+        // top: "100%",
+        top: dynamicPlacementsOfPlots["right-listitems"]?.top - 30,
         right: "100%",
-        transform: "translate(-4px, 5px)",
+        transform: "translate(-8px, 0px)",
       },
     },
   ];
@@ -472,7 +632,7 @@ const QuadrantsWithAniAnIntersections = () => {
       >
         <UserDetails />
         <ProjectHeader />
-        <QuadrantButtons emitSelectedRotation={handleRotation} />
+        <QuadrantButtons emitSelectedRotation={handleRotation} show={show} />
         <LegendComponent />
         <Box
           sx={{
@@ -485,7 +645,7 @@ const QuadrantsWithAniAnIntersections = () => {
             overflow: "visible",
             boxShadow: 1,
             transform: `rotate(${initialRotation}deg)`,
-            transition: "transform 1.5s ease-in-out",
+            transition: "transform 1s ease-in-out",
             //   animation: rotating
             //     ? `${rotateAnimation} 1s forwards`
             //     : `${reverseRotateAnimation} 1s forwards`,
@@ -493,7 +653,7 @@ const QuadrantsWithAniAnIntersections = () => {
         >
           {/* 🧭 Render Quadrants */}
           {rotatedQuads.map((quad, index) => {
-            const position = quad.rotatedPosition;
+            const position = quad.defaultPostion;
             const updatedPosition = quad.updatedPosition;
             const config = quadrantConfigs[position];
             if (!config) return null;
@@ -501,6 +661,7 @@ const QuadrantsWithAniAnIntersections = () => {
             return (
               <React.Fragment key={index}>
                 <Box
+                  id="quadrangle"
                   sx={{
                     ...triangleStyle,
                     backgroundColor: alpha(quad.color, 0.7),
@@ -522,35 +683,128 @@ const QuadrantsWithAniAnIntersections = () => {
                 </Typography>
                 <Collapse in={show}>
                   <Box
+                    id={`${quad.updatedPosition}-listitems`}
                     sx={{
                       position: "absolute",
-                      ...config.listPosition,
                       backgroundColor: "#fff",
                       border: "1px solid #ccc",
                       borderRadius: 2,
                       boxShadow: 3,
                       fontSize: "12px",
+                      ...config.listPosition,
                       "&::-webkit-scrollbar": { display: "none" },
                     }}
                   >
-                    {quad.rowItems.map((item) => (
+                    {quad?.rowItems?.map((item, index) => (
                       <React.Fragment key={item.rowId}>
+                        {/* <Tooltip title={item.rowName} arrow placement="right"> */}
                         <Typography
                           sx={{
-                            color: "#000",
+                            color:
+                              item.rowType === "quandrantOwner"
+                                ? "#a72c4b"
+                                : "#000",
                             fontSize: "11px",
                             whiteSpace: "nowrap",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             padding: "3px",
+                            background:
+                              quad.updatedPosition !== "bottom"
+                                ? "lightgray"
+                                : "transparent",
+                            textAlign:
+                              (index + 1 === quad.rowItems?.length ||
+                                index === 0) &&
+                              quad.updatedPosition === "bottom" &&
+                              item.rowName === ""
+                                ? "center"
+                                : "left",
+                            cursor:
+                              (index + 1 === quad.rowItems?.length ||
+                                index === 0) &&
+                              quad.updatedPosition === "bottom" &&
+                              item.rowName === ""
+                                ? "pointer"
+                                : "",
                             minHeight: "18px",
                             maxHeight: "18px",
                             transform: getRowNameStyle(quad),
-                            ...item.styles,
+                            // ...item.styles,
                           }}
+                          // onClick={() => addNewRowHandler(quad, item)}
                         >
-                          {item.rowName}
+                          {(index + 1 === quad.rowItems?.length ||
+                            index === 0) &&
+                          quad.updatedPosition === "bottom" &&
+                          item.rowName === "" ? (
+                            <span
+                              style={{
+                                display: "flex",
+                                justifyContent:
+                                  quad.defaultPostion === "right"
+                                    ? "space-evenly"
+                                    : "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }}
+                                onClick={(e) => {
+                                  const userName =
+                                    localStorage.getItem("userName");
+                                  if (userName === "reader") {
+                                    return;
+                                  }
+                                  setAddNewAnchorEl(e.currentTarget);
+                                }}
+                              >
+                                <AddBoxIcon
+                                  style={{
+                                    fontSize: "16px",
+                                    color: "#1976d2",
+                                  }}
+                                />
+                                <span style={{ paddingLeft: "4px" }}>Add</span>
+                              </span>
+                              {quad.defaultPostion === "right" && (
+                                <span
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                  }}
+                                  onClick={(e) => {
+                                    const userName =
+                                      localStorage.getItem("userName");
+                                    if (userName === "reader") {
+                                      return;
+                                    }
+                                    setAddNewAnchorEl(e.currentTarget);
+                                    setIsOwnerAdding(() => true);
+                                  }}
+                                >
+                                  <AddBoxIcon
+                                    style={{
+                                      fontSize: "16px",
+                                      color: "#1976d2",
+                                    }}
+                                  />
+                                  <span style={{ paddingLeft: "4px" }}>
+                                    Add an Owner
+                                  </span>
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            `${item.rowName}`
+                          )}
                         </Typography>
+                        {/* </Tooltip> */}
                         <Divider />
                       </React.Fragment>
                     ))}
@@ -578,12 +832,21 @@ const QuadrantsWithAniAnIntersections = () => {
                     gridTemplateColumns: `repeat(${colItems.length}, ${cellWidth}px)`,
                     gridTemplateRows: `repeat(${rowItems.length}, ${cellHeight}px)`,
                     ...style,
+                    // ...dynamicPlacementsOfPlots[`${row}-listitems`],
                   }}
                 >
                   {rowItems.map((rowItem) =>
                     colItems.map((colItem) => (
                       <Box
                         onClick={(e) => {
+                          e.stopPropagation();
+                          setTempVars((prev) => {
+                            return {
+                              ...prev,
+                              selectedCol: colItem,
+                              selectedRow: rowItem,
+                            };
+                          });
                           setAnchorEl(e.currentTarget);
                         }}
                         key={`${rowItem.rowId}-${colItem.rowId}`}
@@ -615,7 +878,7 @@ const QuadrantsWithAniAnIntersections = () => {
         <Popover
           open={Boolean(anchorEl)}
           anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
+          onClose={() => closePopover()}
           anchorOrigin={{
             vertical: "bottom",
             horizontal: "left",
@@ -634,7 +897,14 @@ const QuadrantsWithAniAnIntersections = () => {
                   backgroundColor: alpha("#000", 0.1),
                 },
               }}
-              onClick={() => setAnchorEl(null)}
+              onClick={() => {
+                setTempVars((prev) => {
+                  return {
+                    ...prev,
+                    selectedPopoverValue: value,
+                  };
+                });
+              }}
             >
               <span style={{ paddingRight: "8px", fontSize: "16px" }}>
                 {value.icon}
@@ -644,6 +914,90 @@ const QuadrantsWithAniAnIntersections = () => {
               </span>
             </Box>
           ))}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "center",
+              padding: 1,
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: alpha("#000", 0.1),
+              },
+            }}
+            onClick={() => {
+              setTempVars((prev) => {
+                return {
+                  ...prev,
+                  selectedPopoverValue: "EMPTY",
+                };
+              });
+            }}
+          >
+            <span style={{ paddingRight: "8px", fontSize: "16px" }}>
+              <DoDisturbIcon style={{ fontSize: "10px", color: "#000" }} />
+            </span>
+            <span style={{ textAlign: "start", fontSize: "12px" }}>None</span>
+          </Box>
+        </Popover>
+
+        <Popover
+          open={Boolean(addNewAnchorEl)}
+          anchorEl={addNewAnchorEl}
+          onClose={() => {
+            setAddNewAnchorEl(null);
+            setNewRowText("");
+            setIsOwnerAdding(false);
+          }}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          sx={{ ml: 5, mt: 1 }}
+        >
+          <Box sx={{ p: 1 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+            >
+              <span style={{ margin: "2px 5px 7px 2px", fontSize: "14px" }}>
+                Add New {isOwnerAdding ? "Owner" : "Row"}
+              </span>
+              <span
+                onClick={() => {
+                  setAddNewAnchorEl(null);
+                  setNewRowText("");
+                  setIsOwnerAdding(false);
+                }}
+                style={{
+                  cursor: "pointer",
+                  boxShadow:
+                    "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
+                  padding: "0px 8px",
+                  borderRadius: "8px",
+                }}
+              >
+                x
+              </span>
+            </Box>
+            <TextField
+              size="small"
+              placeholder="Enter here..."
+              variant="outlined"
+              sx={{ minWidth: "250px" }}
+              value={newRowText}
+              autoFocus
+              onChange={(e) => setNewRowText(e.target.value)}
+            />
+
+            <Button
+              disabled={newRowText === ""}
+              sx={{ ml: 1, textTransform: "capitalize" }}
+              variant="contained"
+              onClick={handleSaveOfNewRow}
+            >
+              Save
+            </Button>
+          </Box>
         </Popover>
       </Box>
     </>
