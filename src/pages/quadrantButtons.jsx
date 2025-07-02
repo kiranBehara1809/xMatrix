@@ -114,7 +114,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
             borderRadius: "8px",
           }}
         >
-          <Tooltip title="Rotate Left" placement="bottom" arrow>
+          <Tooltip title="Rotate Left (Anti-clockwise)" placement="bottom" arrow>
             <Button
               disabled={!show}
               variant="contained"
@@ -124,7 +124,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
             </Button>
           </Tooltip>
 
-          <Tooltip title="Rotate Right" placement="bottom" arrow>
+          <Tooltip title="Rotate Right (Clockwise)" placement="bottom" arrow>
             <Button
               disabled={!show}
               variant="contained"
