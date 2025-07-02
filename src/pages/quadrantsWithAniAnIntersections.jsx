@@ -208,24 +208,13 @@ const labelStyle = {
 
 const positionOrder = ["top", "right", "bottom", "left"];
 
-const rotateQuadrants = (quads, rotationIndex) => {
-  return quads.map((q) => {
-    const currentIndex = positionOrder.indexOf(q.defaultPostion);
-    const newIndex = (currentIndex + rotationIndex) % 4;
-    return {
-      ...q,
-      rotatedPosition: positionOrder[newIndex],
-    };
-  });
-};
-
 const QuadrantsWithAniAnIntersections = () => {
   const [rotationIndex, setRotationIndex] = useState(0);
-  const [rotating, setRotating] = useState(false);
   const [show, setShow] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const [initialRotation, setInitialRotation] = useState(0);
   const [showEverything, setShowEverything] = useState(true);
+  const [rotatedQuads, setRotatedQuads] = useState([]);
 
   useEffect(() => {
     const userLoggedIn = localStorage.getItem("userName");
@@ -240,14 +229,89 @@ const QuadrantsWithAniAnIntersections = () => {
   const quadrantsForThisComponent = JSON.parse(
     JSON.stringify(QUADRANTS.quadrants)
   );
-  const rotatedQuads = rotateQuadrants(
-    quadrantsForThisComponent,
-    rotationIndex
-  );
+
+  useEffect(() => {
+    setRotatedQuads(rotateQuadrants(quadrantsForThisComponent, rotationIndex));
+  }, [initialRotation]);
+  //   const rotatedQuads = rotateQuadrants(
+  //     quadrantsForThisComponent,
+  //     rotationIndex
+  //   );
 
   const quadrantMap = Object.fromEntries(
     rotatedQuads.map((q) => [q.rotatedPosition, q])
   );
+
+  const getUpdatedPosition = (quadrantObj) => {
+    console.log(quadrantObj.defaultPostion, initialRotation);
+    if (quadrantObj.defaultPostion === "top" && initialRotation === 0) {
+      return "top";
+    }
+    if (quadrantObj.defaultPostion === "top" && initialRotation === 90) {
+      return "right";
+    }
+    if (quadrantObj.defaultPostion === "top" && initialRotation === 180) {
+      return "bottom";
+    }
+    if (quadrantObj.defaultPostion === "top" && initialRotation === 270) {
+      return "left";
+    }
+    // ---
+    if (quadrantObj.defaultPostion === "right" && initialRotation === 0) {
+      return "right";
+    }
+    if (quadrantObj.defaultPostion === "right" && initialRotation === 90) {
+      return "bottom";
+    }
+    if (quadrantObj.defaultPostion === "right" && initialRotation === 180) {
+      return "left";
+    }
+    if (quadrantObj.defaultPostion === "right" && initialRotation === 270) {
+      return "top";
+    }
+    // ---
+    if (quadrantObj.defaultPostion === "bottom" && initialRotation === 0) {
+      return "bottom";
+    }
+    if (quadrantObj.defaultPostion === "bottom" && initialRotation === 90) {
+      return "left";
+    }
+    if (quadrantObj.defaultPostion === "bottom" && initialRotation === 180) {
+      return "top";
+    }
+    if (quadrantObj.defaultPostion === "bottom" && initialRotation === 270) {
+      return "right";
+    }
+    // ---
+    if (quadrantObj.defaultPostion === "left" && initialRotation === 0) {
+      return "left";
+    }
+    if (quadrantObj.defaultPostion === "left" && initialRotation === 90) {
+      return "top";
+    }
+    if (quadrantObj.defaultPostion === "left" && initialRotation === 180) {
+      return "right";
+    }
+    if (quadrantObj.defaultPostion === "left" && initialRotation === 270) {
+      return "bottom";
+    }
+    return quadrantObj.defaultPostion;
+  };
+
+  const rotateQuadrants = (quads, rotationIndex) => {
+    let a = quads.map((q) => {
+      const currentIndex = positionOrder.indexOf(q.defaultPostion);
+      const newIndex = (currentIndex + rotationIndex) % 4;
+      return {
+        ...q,
+        rotatedPosition: positionOrder[newIndex],
+        updatedPosition: getUpdatedPosition(q),
+      };
+    });
+    console.log("rotateQuadrants", a);
+    return a;
+  };
+
   const quadrantConfigs = {
     top: {
       clipPath: "polygon(0 0, 100% 0, 50% 50%)",
@@ -314,7 +378,7 @@ const QuadrantsWithAniAnIntersections = () => {
         setInitialRotation(270);
         break;
       default:
-        setRotationIndex(0);
+        setInitialRotation(0);
         break;
     }
     setTimeout(() => {
@@ -364,6 +428,32 @@ const QuadrantsWithAniAnIntersections = () => {
     },
   ];
 
+  const getRowNameStyle = (quadrantObj) => {
+    const STYLEOBJ = {
+      "top-top": "rotate(0deg)",
+      "top-right": "rotate(180deg)",
+      "top-bottom": "rotate(180deg)",
+      "top-left": "rotate(0deg)",
+
+      "right-top": "rotate(180deg)",
+      "right-right": "rotate(0deg)",
+      "right-bottom": "rotate(0deg)",
+      "right-left": "rotate(180deg)",
+
+      "bottom-top": "rotate(180deg)",
+      "bottom-right": "rotate(0deg)",
+      "bottom-bottom": "rotate(0deg)",
+      "bottom-left": "rotate(180deg)",
+
+      "left-top": "rotate(360deg)",
+      "left-right": "rotate(180deg)",
+      "left-bottom": "rotate(180deg)",
+      "left-left": "rotate(0deg)",
+    };
+    const dynamicKey = `${quadrantObj.defaultPostion}-${quadrantObj.updatedPosition}`;
+    return STYLEOBJ[dynamicKey] || "rotate(0deg)";
+  };
+
   if (!showEverything) {
     return null;
   }
@@ -404,6 +494,7 @@ const QuadrantsWithAniAnIntersections = () => {
           {/* 🧭 Render Quadrants */}
           {rotatedQuads.map((quad, index) => {
             const position = quad.rotatedPosition;
+            const updatedPosition = quad.updatedPosition;
             const config = quadrantConfigs[position];
             if (!config) return null;
 
@@ -439,7 +530,6 @@ const QuadrantsWithAniAnIntersections = () => {
                       borderRadius: 2,
                       boxShadow: 3,
                       fontSize: "12px",
-
                       "&::-webkit-scrollbar": { display: "none" },
                     }}
                   >
@@ -455,6 +545,7 @@ const QuadrantsWithAniAnIntersections = () => {
                             padding: "3px",
                             minHeight: "18px",
                             maxHeight: "18px",
+                            transform: getRowNameStyle(quad),
                             ...item.styles,
                           }}
                         >

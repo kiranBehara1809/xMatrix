@@ -1,8 +1,37 @@
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { Box, Button } from "@mui/material";
+import RedoIcon from "@mui/icons-material/Redo";
+import UndoIcon from "@mui/icons-material/Undo";
 
 const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0); // Track selected button
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const indexes = [0, 1, 2, 3];
+  const forwardClick = () => {
+    setSelectedIndex((prev) => {
+      const currentIndex = indexes.findIndex((index) => index === prev);
+      if (currentIndex === 3) {
+        return 0;
+      }
+      const nextIndex = currentIndex + 1;
+      return nextIndex;
+    });
+  };
+  const backwardClick = () => {
+    setSelectedIndex((prev) => {
+      const currentIndex = indexes.findIndex((index) => index === prev);
+      if (currentIndex === 0) {
+        return 3;
+      }
+      const nextIndex = currentIndex - 1;
+      return nextIndex;
+    });
+  };
+
+  useEffect(() => {
+    emitSelectedRotation(selectedIndex);
+  }, [selectedIndex]);
 
   const quadrantColors = [
     {
@@ -33,6 +62,9 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
 
   const containerStyle = {
     display: "flex",
+    justifyContent: "center",
+    flexDirection: "column",
+    alignItems: "center",
     flexWrap: "wrap",
     gap: "20px",
     padding: "20px",
@@ -68,17 +100,34 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
             fontSize: "13px",
             color: "#000",
             whiteSpace: "break-spaces",
-            width:"120px"
+            width: "120px",
           }}
         >
-          Switch Views or Change orientation
+          Change orientation
         </span>
-        {quadrantColors.map((colors, index) => {
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "5px",
+            p: 1,
+            borderRadius: "8px",
+          }}
+        >
+          <Button variant="contained" onClick={() => backwardClick()}>
+            <UndoIcon />
+          </Button>
+          <Button variant="contained" onClick={() => forwardClick()}>
+            <RedoIcon />
+          </Button>
+        </Box>
+
+        {/* {quadrantColors.map((colors, index) => {
           const isSelected = selectedIndex === index;
           const buttonStyle = {
             ...baseButtonStyle,
             boxShadow: isSelected ? "0 0 0 3px #000 inset" : "none",
-            transform: isSelected ? "scale(1.5)" : "scale(1)",
+            transform: isSelected ? "scale(1.5)" : "scale(0.8)",
           };
 
           return (
@@ -91,7 +140,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
                   setSelectedIndex(index);
                 }}
               >
-                {/* Top triangle */}
+                Top triangle
                 <div
                   style={{
                     ...triangleStyle,
@@ -99,7 +148,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
                     clipPath: "polygon(0% 0%, 100% 0%, 50% 50%)",
                   }}
                 />
-                {/* Right triangle */}
+                Right triangle
                 <div
                   style={{
                     ...triangleStyle,
@@ -107,7 +156,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
                     clipPath: "polygon(100% 0%, 100% 100%, 50% 50%)",
                   }}
                 />
-                {/* Bottom triangle */}
+                Bottom triangle
                 <div
                   style={{
                     ...triangleStyle,
@@ -115,7 +164,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
                     clipPath: "polygon(100% 100%, 0% 100%, 50% 50%)",
                   }}
                 />
-                {/* Left triangle */}
+                Left triangle
                 <div
                   style={{
                     ...triangleStyle,
@@ -126,7 +175,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {} }) => {
               </div>
             </>
           );
-        })}
+        })} */}
       </div>
     </>
   );
