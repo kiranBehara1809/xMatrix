@@ -15,6 +15,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
         return 0;
       }
       const nextIndex = currentIndex + 1;
+      emitSelectedRotation({ index: nextIndex, buttonClick: "FORWARD" });
       return nextIndex;
     });
   };
@@ -25,13 +26,14 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
         return 3;
       }
       const nextIndex = currentIndex - 1;
+      emitSelectedRotation({ index: nextIndex, buttonClick: "PREVIOUS" });
       return nextIndex;
     });
   };
 
-  useEffect(() => {
-    emitSelectedRotation(selectedIndex);
-  }, [selectedIndex]);
+  // useEffect(() => {
+
+  // }, [selectedIndex]);
 
   const quadrantColors = [
     {
@@ -114,11 +116,17 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
             borderRadius: "8px",
           }}
         >
-          <Tooltip title="Rotate Left (Anti-clockwise)" placement="bottom" arrow>
+          <Tooltip
+            title="Rotate Left (Anti-clockwise)"
+            placement="bottom"
+            arrow
+          >
             <Button
               disabled={!show}
               variant="contained"
-              onClick={() => backwardClick()}
+              onClick={() =>
+                emitSelectedRotation({ index: 0, buttonClick: "PREVIOUS" })
+              }
             >
               <UndoIcon />
             </Button>
@@ -128,7 +136,9 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
             <Button
               disabled={!show}
               variant="contained"
-              onClick={() => forwardClick()}
+              onClick={() =>
+                emitSelectedRotation({ index: 0, buttonClick: "FORWARD" })
+              }
             >
               <RedoIcon />
             </Button>

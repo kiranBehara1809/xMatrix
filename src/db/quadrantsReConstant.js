@@ -1,15 +1,11 @@
-const QUADRANTS = {
+const QUADRANTS_CONSTANT = {
   quadrants: [
     {
       quadrantName: "Top Level Improvements",
-      color: "#2979ff",
-      defaultPostion: "top",
-      rowItems: [
-        {
-          rowName: "",
-          rowId: "1ebcf7e4-4212-40b7-b8fc-17f1bd228ca3",
-          rowType: "quandrantRow",
-        },
+      quadrantColor: "#2979ff",
+      quadrantPosition: "top",
+      updatedPosition: "",
+      quadrantListItems: [
         {
           rowName: "Roll out targeted campaigns for investment services",
           rowId: "7f41e5c1-98a3-4eaf-85ff-1b7f8a6ad812",
@@ -144,9 +140,10 @@ const QUADRANTS = {
     },
     {
       quadrantName: "Metrics to Improve",
-      color: "#ff9100",
-      defaultPostion: "right",
-      rowItems: [
+      quadrantColor: "#ff9100",
+      quadrantPosition: "right",
+      updatedPosition: "",
+      quadrantListItems: [
         {
           rowName:
             "The number of app downloads and active users is measured monthly",
@@ -173,11 +170,6 @@ const QUADRANTS = {
           rowId: "4d8238a5-82c9-45a7-b746-c8183ba7edfd",
           rowType: "quandrantRow",
         },
-        // {
-        //   rowName: "",
-        //   rowId: "160917d4-1958-4cff-a7b3-c3539f170b2d",
-        //   rowType: "quandrantRow",
-        // },
         {
           rowName: "John Dyer",
           rowId: "4d10b9c1-268b-4f0a-a803-5104b6871a7d",
@@ -198,18 +190,14 @@ const QUADRANTS = {
           rowId: "223f204c-ca11-4ffd-91f8-1178adc345d0",
           rowType: "quandrantOwner",
         },
-        {
-          rowName: "",
-          rowId: "1ebcf7e4-1707-60d7-b8fc-17f1bd228ca3",
-          rowType: "quandrantRow",
-        },
       ],
     },
     {
       quadrantName: "Long-Term Objectives",
-      color: "#ff1744",
-      defaultPostion: "bottom",
-      rowItems: [
+      quadrantColor: "#ff1744",
+      quadrantPosition: "bottom",
+      updatedPosition: "",
+      quadrantListItems: [
         {
           rowName:
             "Expand digital banking services to capture a younger demographic",
@@ -232,23 +220,14 @@ const QUADRANTS = {
           rowId: "e6fa4c1d-5d35-49b0-b47d-b14e0e3b91a6",
           rowType: "quandrantRow",
         },
-        {
-          rowName: "",
-          rowId: "86954c44-4c82-44bd-b718-370dc73280ca",
-          rowType: "quandrantRow",
-        },
       ],
     },
     {
       quadrantName: "Annual Objectives",
-      color: "#00e676",
-      defaultPostion: "left",
-      rowItems: [
-        {
-          rowName: "",
-          rowId: "11e4ac96-052a-4dd6-8874-00c91f56e216",
-          rowType: "quandrantRow",
-        },
+      quadrantColor: "#00e676",
+      quadrantPosition: "left",
+      updatedPosition: "",
+      quadrantListItems: [
         {
           rowName: "Increase assets under management by 15%",
           rowId: "b91e9381-5906-470a-a9a5-fc511d93051d",
@@ -302,4 +281,4 @@ const QUADRANTS = {
   ],
 };
 
-export { QUADRANTS };
+export { QUADRANTS_CONSTANT };
