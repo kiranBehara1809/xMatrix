@@ -1,7 +1,179 @@
-import React, { useEffect, useState } from "react";
-import { Box, Typography, Button, Divider } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
+import { Box, Typography, Button, Divider, Avatar } from "@mui/material";
 import { QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
 import QuadrantButtons from "./quadrantButtons";
+import CircleIcon from "@mui/icons-material/Circle";
+import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import DoDisturbIcon from "@mui/icons-material/DoDisturb";
+
+const VerticalDivider = () => (
+  <div
+    style={{
+      width: "1px",
+      backgroundColor: "#000",
+      height: "100%",
+      margin: "0 20px",
+    }}
+  />
+);
+
+const UserDetails = () => {
+  const userName = localStorage.getItem("userName");
+  return (
+    <Box
+      sx={{
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "auto",
+        height: "30px",
+        borderRadius: "8px",
+        padding: "8px 12px",
+        boxShadow:
+          "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
+      }}
+    >
+      <Avatar
+        sx={{ width: 25, height: 25, backgroundColor: "#1976d2" }}
+        variant="rounded"
+      >
+        {userName?.split("")[0].toUpperCase()}
+      </Avatar>
+      <Typography
+        sx={{
+          marginLeft: "8px",
+          fontSize: "14px",
+          color: "#000",
+          fontWeight: "bold",
+        }}
+      >
+        {userName
+          ?.toLowerCase()
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")}
+      </Typography>
+      <VerticalDivider />
+      <Typography
+        sx={{
+          fontSize: "14px",
+          color: "#000",
+          fontWeight: "bold",
+          cursor: "pointer",
+        }}
+        onClick={() => {
+          localStorage.removeItem("userName");
+          window.location.href = "/login";
+        }}
+      >
+        Logout
+      </Typography>
+    </Box>
+  );
+};
+
+const ProjectHeader = () => {
+  return (
+    <>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          fontSize: "24px",
+          fontWeight: "bold",
+          color: "#000",
+          padding: "10px 16px",
+          borderRadius: "8px",
+          boxShadow:
+            "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
+        }}
+      >
+        X-Matrix
+      </Box>
+    </>
+  );
+};
+
+const LegendComponent = () => {
+  return (
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: "10px",
+        left: "10px",
+        boxShadow:
+          "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
+        borderRadius: "8px",
+        padding: "10px 16px 16px 16px",
+      }}
+    >
+      <span
+        style={{
+          textAlign: "start",
+          fontSize: "13px",
+          color: "#000",
+        }}
+      >
+        Keys
+      </span>
+      {Object.entries(MAPPING)?.map(([key, value], index) => (
+        <Box
+          key={index}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "4px",
+          }}
+        >
+          <span style={{ paddingRight: "8px", fontSize: "16px" }}>
+            {value.icon}
+          </span>
+          <span style={{ textAlign: "start", fontSize: "12px", color: "#000" }}>
+            {value.label}
+          </span>
+        </Box>
+      ))}
+    </Box>
+  );
+};
+
+const MAPPING = {
+  RL: {
+    label: "Relationship",
+    value: "RL",
+    icon: (
+      <CircleIcon
+        fontSize="small"
+        style={{ fontSize: "10px", color: "#000" }}
+      />
+    ),
+  },
+  PR: {
+    label: "Primary Responsibility",
+    value: "PR",
+    icon: (
+      <PanoramaFishEyeIcon
+        fontSize="small"
+        style={{ fontSize: "10px", color: "#000" }}
+      />
+    ),
+  }, // PRIMARY RESPONSIBILITY
+  SR: {
+    label: "Secondary Responsibility",
+    value: "SR",
+    icon: (
+      <CircleIcon
+        fontSize="small"
+        style={{ fontSize: "10px", color: "darkgray" }}
+      />
+    ),
+  }, // SECONDARY RESPONSIBILITY
+};
 
 const cellSize = 30;
 
@@ -104,6 +276,9 @@ const TriangleBox = () => {
   const getQuadrant = (pos) =>
     data.quadrants.find((q) => q.quadrantPosition === pos);
 
+  const getPlotQuadrant = (pos) =>
+    data.quadrants.find((q) => q.basePosition === pos);
+
   const rotateEntire = ({ index, buttonClick }) => {
     setData((prev) => {
       const positions = ["top", "right", "bottom", "left"];
@@ -202,14 +377,130 @@ const TriangleBox = () => {
         };
       });
     }
-    console.log(defaultPositions);
   }, [defaultPositions]);
 
   const getLength = (pos) => getQuadrant(pos)?.quadrantListItems.length || 0;
 
+  const noOfBoxes = (a, b) => {
+    const qAItems = getQuadrant(a)?.quadrantListItems;
+    const qBItems = getQuadrant(b)?.quadrantListItems;
+    let mappeditems = [];
+    qAItems?.map((qa) => {
+      qBItems?.map((qb) => {
+        mappeditems.push(`${qa.rowId}~~X~~${qb.rowId}`);
+      });
+    });
+    return mappeditems;
+  };
+
+  const getNewIntersections = (quadrantA, quadrantB, obj) => {
+    const qAItems = getQuadrant(quadrantA)?.quadrantListItems;
+    const qBItems = getQuadrant(quadrantB)?.quadrantListItems;
+
+    const partsOfMap = obj.split("~~X~~");
+    let foundIntersections = [];
+
+    const allQItems = ["top", "right", "bottom", "left"]?.map((x) => {
+      return getPlotQuadrant(x)?.quadrantListItems;
+    });
+    const finalArr = [
+      ...allQItems[0],
+      ...allQItems[1],
+      ...allQItems[2],
+      ...allQItems[3],
+    ];
+    console.log(JSON.stringify(finalArr));
+    finalArr?.map((qaItem) => {
+      console.log(JSON.stringify(qaItem));
+      if (partsOfMap?.includes(qaItem?.rowId)) {
+        foundIntersections = [
+          ...foundIntersections,
+          ...(qaItem?.intersections ?? []),
+        ];
+      }
+    });
+
+    // qAItems?.map((qaItem) => {
+    //   if (partsOfMap?.includes(qaItem?.rowId)) {
+    //     foundIntersections = qaItem?.intersections ?? [];
+    //   }
+    // });
+    // qBItems?.map((qaItem) => {
+    //   if (partsOfMap?.includes(qaItem?.rowId)) {
+    //     foundIntersections = [
+    //       ...foundIntersections,
+    //       ...(qaItem?.intersections ?? []),
+    //     ];
+    //   }
+    // });
+    let returnVal = "";
+    for (let i = 0; i < foundIntersections?.length; i++) {
+      if (
+        obj === `${partsOfMap[0]}~~X~~${foundIntersections[i]["rowId"]}` ||
+        obj === `${partsOfMap[1]}~~X~~${foundIntersections[i]["rowId"]}`
+      ) {
+        returnVal = MAPPING[foundIntersections[i]["type"]].icon;
+        break;
+      }
+    }
+    return returnVal;
+    // qBItems?.map((qaItem) => {
+    //   objFound = qaItem?.intersections?.find(
+    //     (x) => x === partsOfMap[0] || x === partsOfMap[1]
+    //   );
+    // });
+
+    // console.log(objFound);
+  };
+
+  const getIntersections = (quadrantA, quadrantB, obj) => {
+    // quadrantA = height
+    // quadrantB = width
+    const partsOfMap = obj.split("~~X~~");
+    const qAItems = getQuadrant(quadrantA)?.quadrantListItems;
+    const qBItems = getQuadrant(quadrantB)?.quadrantListItems;
+    // let mappeditems = [];
+    // qAItems?.map((qa) => {
+    //   qBItems?.map((qb) => {
+    //     mappeditems.push(`${qa.rowId}x${qb.rowId}`);
+    //   });
+    // });
+    let intersections = [];
+    qAItems?.map((qai) => {
+      qai?.intersections?.map((qaint) => {
+        intersections?.push({
+          [`${qai.rowId}~~X~~${qaint.rowId}`]: qaint,
+        });
+        intersections?.push({
+          [`${qaint.rowId}~~X~~${qai.rowId}`]: qaint,
+        });
+      });
+    });
+    qBItems?.map((qai) => {
+      qai?.intersections?.map((qaint) => {
+        intersections?.push({
+          [`${qaint.rowId}~~X~~${qai.rowId}`]: qaint,
+        });
+      });
+      qai?.intersections?.map((qaint) => {
+        intersections?.push({
+          [`${qai.rowId}~~X~~${qaint.rowId}`]: qaint,
+        });
+      });
+    });
+    // console.log(JSON.stringify(intersections));
+    const mappedObjFound = intersections.find((x) => x === obj);
+    if (mappedObjFound) {
+      console.log("Helllo", JSON.stringify(mappedObjFound));
+    }
+  };
+
   return (
     <>
+      <UserDetails />
+      <ProjectHeader />
       <QuadrantButtons emitSelectedRotation={rotateEntire} show={true} />
+      <LegendComponent />
 
       <Box
         sx={{
@@ -269,7 +560,7 @@ const TriangleBox = () => {
               alignItems: "center",
               height: `${getLength("right") * cellSize}px`,
               width: "200px",
-              transform: "rotate(270deg)",
+              transform: "rotate(-90deg)",
               background: "lightgray",
               //   marginLeft: "-39px",
               //   ...(defaultPositions[0] === "right" && {
@@ -312,7 +603,7 @@ const TriangleBox = () => {
               alignItems: "center",
               height: `${getLength("left") * cellSize}px`,
               width: "200px",
-              transform: "rotate(270deg)",
+              transform: "rotate(-90deg)",
               background: "lightGray",
               //   marginRight: "-39px",
               ...margins.leftList,
@@ -360,7 +651,6 @@ const TriangleBox = () => {
             })}
           </Box>
           {/* Grids for corners */}
-          {/* Helper to get list length safely */}
 
           {/* Top-Right Grid */}
           <Box
@@ -376,11 +666,19 @@ const TriangleBox = () => {
               "& > div": gridCell,
             }}
           >
-            {Array.from({ length: getLength("top") * getLength("right") }).map(
-              (_, i) => (
-                <Box key={i}>{i + 1}</Box>
-              )
-            )}
+            {noOfBoxes("top", "right").map((val, i) => (
+              <Box key={i} title={val}>
+                {getNewIntersections("top", "right", val)}
+                {/* {getNewIntersections(
+                  defaultPositions[0],
+                  defaultPositions[1],
+                  val
+                )} */}
+                {/* {JSON.stringify(obj)} */}
+                {/* {getIntersections("top", "right", val)} */}
+                {/* {intersections} */}
+              </Box>
+            ))}
           </Box>
 
           {/* Bottom-Right Grid */}
@@ -419,10 +717,15 @@ const TriangleBox = () => {
               "& > div": gridCell,
             }}
           >
-            {Array.from({
-              length: getLength("bottom") * getLength("left"),
-            }).map((_, i) => (
-              <Box key={i}>{i + 1}</Box>
+            {noOfBoxes("left", "bottom").map((val, i) => (
+              <Box key={i} title={val}>
+                {/* {getNewIntersections("left", "bottom", val)} */}
+                {getNewIntersections(
+                  defaultPositions[3],
+                  defaultPositions[2],
+                  val
+                )}
+              </Box>
             ))}
           </Box>
 
@@ -440,11 +743,16 @@ const TriangleBox = () => {
               "& > div": gridCell,
             }}
           >
-            {Array.from({ length: getLength("top") * getLength("left") }).map(
-              (_, i) => (
-                <Box key={i}>{i + 1}</Box>
-              )
-            )}
+            {noOfBoxes("top", "left").map((val, i) => (
+              <Box key={i} title={val}>
+                {/* {getNewIntersections("top", "left", val)} */}
+                {getNewIntersections(
+                  defaultPositions[0],
+                  defaultPositions[3],
+                  val
+                )}
+              </Box>
+            ))}
           </Box>
         </Box>
       </Box>
