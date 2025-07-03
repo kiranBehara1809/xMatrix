@@ -16,9 +16,9 @@ import { keyframes } from "@emotion/react";
 import { QUADRANTS } from "../db/quadrants";
 import CircleIcon from "@mui/icons-material/Circle";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
-import QuadrantButtons from "./quadrantButtons";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
+import QuadrantButtonsOld from "./quadButtonOld";
 
 const VerticalDivider = () => (
   <div
@@ -632,7 +632,7 @@ const QuadrantsWithAniAnIntersections = () => {
       >
         <UserDetails />
         <ProjectHeader />
-        <QuadrantButtons emitSelectedRotation={handleRotation} show={show} />
+        <QuadrantButtonsOld emitSelectedRotation={handleRotation} show={show} />
         <LegendComponent />
         <Box
           sx={{
