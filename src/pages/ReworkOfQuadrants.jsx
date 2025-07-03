@@ -1,5 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Box, Typography, Button, Divider, Avatar } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Divider,
+  Avatar,
+  Collapse,
+} from "@mui/material";
 import { QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
 import QuadrantButtons from "./quadrantButtons";
 import CircleIcon from "@mui/icons-material/Circle";
@@ -245,6 +252,24 @@ const TriangleBox = () => {
     "bottom",
     "left",
   ]);
+  const [showQuadrants, setShowQuadrants] = useState({
+    topRight: true,
+    bottomRight: true,
+    bottomLeft: true,
+    topLeft: true,
+  });
+
+  const [animation, setAnimation] = useState({
+    top: true,
+    topRight: true,
+    right: true,
+    bottomRight: true,
+    bottom: true,
+    bottomLeft: true,
+    left: true,
+    topLeft: true,
+  });
+
   const [margins, setMargin] = useState({
     topleft: { marginLeft: "78px" },
     topright: { marginLeft: "0px" },
@@ -269,18 +294,98 @@ const TriangleBox = () => {
     return () => {
       setDefaultPositions(["top", "right", "bottom", "left"]);
       setData(JSON.parse(JSON.stringify(QUADRANTS_CONSTANT)));
+      setShowQuadrants((prev) => {
+        return {
+          topRight: true,
+          bottomRight: true,
+          bottomLeft: true,
+          topLeft: true,
+        };
+      });
     };
   }, []);
 
-  // Helper: get quadrant by position
+  useEffect(() => {
+    const blueQuadrant = data?.quadrants?.find((x) => x.basePosition === "top");
+    if (!blueQuadrant) return;
+
+    let targetState = {
+      topRight: true,
+      bottomRight: false,
+      bottomLeft: true,
+      topLeft: true,
+    };
+
+    if (blueQuadrant.updatedPosition === "right") {
+      targetState = {
+        topRight: true,
+        bottomRight: true,
+        bottomLeft: false,
+        topLeft: true,
+      };
+    } else if (blueQuadrant.updatedPosition === "bottom") {
+      targetState = {
+        topRight: true,
+        bottomRight: true,
+        bottomLeft: true,
+        topLeft: false,
+      };
+    } else if (blueQuadrant.updatedPosition === "left") {
+      targetState = {
+        topRight: false,
+        bottomRight: true,
+        bottomLeft: true,
+        topLeft: true,
+      };
+    }
+
+    // Step 1: Hide all immediately
+    setShowQuadrants({
+      topRight: false,
+      bottomRight: false,
+      bottomLeft: false,
+      topLeft: false,
+    });
+
+    // Step 2: Show one by one based on targetState
+    const keys = Object.keys(targetState);
+    keys.forEach((key, index) => {
+      setShowQuadrants((prev) => ({
+        ...prev,
+        [key]: targetState[key],
+      }));
+    });
+  }, [data]);
+
   const getQuadrant = (pos) =>
     data.quadrants.find((q) => q.quadrantPosition === pos);
 
-  const getPlotQuadrant = (pos) =>
-    data.quadrants.find((q) => q.basePosition === pos);
+  const triggerAnimationSequence = () => {
+    const keys = Object.keys(animation);
+
+    // Step 1: Hide all
+    setAnimation((prev) => {
+      const updated = {};
+      keys.forEach((key) => {
+        updated[key] = false;
+      });
+      return updated;
+    });
+
+    // Step 2: Show one by one with delay
+    keys.forEach((key, index) => {
+      setTimeout(() => {
+        setAnimation((prev) => ({
+          ...prev,
+          [key]: true,
+        }));
+      }, 300 * index); // 300ms delay between each item
+    });
+  };
 
   const rotateEntire = ({ index, buttonClick }) => {
     setData((prev) => {
+      // triggerAnimationSequence();
       const positions = ["top", "right", "bottom", "left"];
 
       // Shift quadrant positions
@@ -290,8 +395,13 @@ const TriangleBox = () => {
           buttonClick === "FORWARD" ? currentIndex + 1 : currentIndex - 1;
         const nextIndex =
           ((val % positions.length) + positions.length) % positions.length;
+
         return {
           ...q,
+          quadrantListItems:
+            positions[nextIndex] === "left" || positions[nextIndex] === "right"
+              ? [...q.quadrantListItems]?.reverse()
+              : q.quadrantListItems,
           quadrantPosition: positions[nextIndex],
           updatedPosition: positions[nextIndex],
         };
@@ -322,7 +432,7 @@ const TriangleBox = () => {
   };
 
   useEffect(() => {
-    // console.log(defaultPositions, defaultPositions[0]);
+    console.log(defaultPositions);
     if (defaultPositions[0] === "right") {
       setMargin((prev) => {
         return {
@@ -351,17 +461,7 @@ const TriangleBox = () => {
         };
       });
     }
-    // if (defaultPositions[0] === "bottom") {
-    //   // default view
-    //   setMargin((prev) => {
-    //     return {
-    //       topleft: { marginRight: "0px" },
-    //       topright: { marginLeft: "0px" },
-    //       bottomright: { marginLeft: "0px" },
-    //       bottomleft: { marginRight: "0px" },
-    //     };
-    //   });
-    // }
+
     if (defaultPositions[0] === "top") {
       // default view
       setMargin((prev) => {
@@ -377,6 +477,22 @@ const TriangleBox = () => {
         };
       });
     }
+
+    // if (defaultPositions[0] === "bottom") {
+    //   // default view
+    //   setMargin((prev) => {
+    //     return {
+    //       topleft: { marginRight: "-100px" },
+    //       topright: { marginLeft: "-39px" },
+    //       bottomleft: { marginLeft: "0px" },
+    //       bottomright: { marginLeft: "0px" },
+    //       topList: {},
+    //       bottomList: {},
+    //       leftList: { marginRight: "0px" },
+    //       rightList: { marginRight: "39px" },
+    //     };
+    //   });
+    //  }
   }, [defaultPositions]);
 
   const getLength = (pos) => getQuadrant(pos)?.quadrantListItems.length || 0;
@@ -394,104 +510,46 @@ const TriangleBox = () => {
   };
 
   const getNewIntersections = (quadrantA, quadrantB, obj) => {
-    const qAItems = getQuadrant(quadrantA)?.quadrantListItems;
-    const qBItems = getQuadrant(quadrantB)?.quadrantListItems;
-
     const partsOfMap = obj.split("~~X~~");
     let foundIntersections = [];
 
-    const allQItems = ["top", "right", "bottom", "left"]?.map((x) => {
-      return getPlotQuadrant(x)?.quadrantListItems;
+    const allQItems = QUADRANTS_CONSTANT.quadrants?.map((x) => {
+      return x?.quadrantListItems;
     });
-    const finalArr = [
-      ...allQItems[0],
-      ...allQItems[1],
-      ...allQItems[2],
-      ...allQItems[3],
-    ];
-    console.log(JSON.stringify(finalArr));
-    finalArr?.map((qaItem) => {
-      console.log(JSON.stringify(qaItem));
-      if (partsOfMap?.includes(qaItem?.rowId)) {
+
+    allQItems?.map((qaItem, i) => {
+      const f1 = qaItem?.find((x) => x.rowId === partsOfMap[0]);
+      const f2 = qaItem?.find((x) => x.rowId === partsOfMap[1]);
+      if (f1) {
         foundIntersections = [
           ...foundIntersections,
-          ...(qaItem?.intersections ?? []),
+          ...(f1?.intersections ?? []),
+        ];
+      }
+      if (f2) {
+        foundIntersections = [
+          ...foundIntersections,
+          ...(f2?.intersections ?? []),
         ];
       }
     });
 
-    // qAItems?.map((qaItem) => {
-    //   if (partsOfMap?.includes(qaItem?.rowId)) {
-    //     foundIntersections = qaItem?.intersections ?? [];
-    //   }
-    // });
-    // qBItems?.map((qaItem) => {
-    //   if (partsOfMap?.includes(qaItem?.rowId)) {
-    //     foundIntersections = [
-    //       ...foundIntersections,
-    //       ...(qaItem?.intersections ?? []),
-    //     ];
-    //   }
-    // });
-    let returnVal = "";
-    for (let i = 0; i < foundIntersections?.length; i++) {
+    const a = foundIntersections?.find((x) => {
       if (
-        obj === `${partsOfMap[0]}~~X~~${foundIntersections[i]["rowId"]}` ||
-        obj === `${partsOfMap[1]}~~X~~${foundIntersections[i]["rowId"]}`
+        obj === `${partsOfMap[0]}~~X~~${x["rowId"]}` ||
+        obj === `${partsOfMap[1]}~~X~~${x["rowId"]}` ||
+        obj === `${x["rowId"]}~~X~~${partsOfMap[0]}` ||
+        obj === `${x["rowId"]}~~X~~${partsOfMap[1]}`
       ) {
-        returnVal = MAPPING[foundIntersections[i]["type"]].icon;
-        break;
+        return x;
+      } else {
+        return "";
       }
-    }
-    return returnVal;
-    // qBItems?.map((qaItem) => {
-    //   objFound = qaItem?.intersections?.find(
-    //     (x) => x === partsOfMap[0] || x === partsOfMap[1]
-    //   );
-    // });
-
-    // console.log(objFound);
-  };
-
-  const getIntersections = (quadrantA, quadrantB, obj) => {
-    // quadrantA = height
-    // quadrantB = width
-    const partsOfMap = obj.split("~~X~~");
-    const qAItems = getQuadrant(quadrantA)?.quadrantListItems;
-    const qBItems = getQuadrant(quadrantB)?.quadrantListItems;
-    // let mappeditems = [];
-    // qAItems?.map((qa) => {
-    //   qBItems?.map((qb) => {
-    //     mappeditems.push(`${qa.rowId}x${qb.rowId}`);
-    //   });
-    // });
-    let intersections = [];
-    qAItems?.map((qai) => {
-      qai?.intersections?.map((qaint) => {
-        intersections?.push({
-          [`${qai.rowId}~~X~~${qaint.rowId}`]: qaint,
-        });
-        intersections?.push({
-          [`${qaint.rowId}~~X~~${qai.rowId}`]: qaint,
-        });
-      });
     });
-    qBItems?.map((qai) => {
-      qai?.intersections?.map((qaint) => {
-        intersections?.push({
-          [`${qaint.rowId}~~X~~${qai.rowId}`]: qaint,
-        });
-      });
-      qai?.intersections?.map((qaint) => {
-        intersections?.push({
-          [`${qai.rowId}~~X~~${qaint.rowId}`]: qaint,
-        });
-      });
-    });
-    // console.log(JSON.stringify(intersections));
-    const mappedObjFound = intersections.find((x) => x === obj);
-    if (mappedObjFound) {
-      console.log("Helllo", JSON.stringify(mappedObjFound));
+    if (a) {
+      return MAPPING[a["type"]].icon ?? "";
+    } else {
+      return "";
     }
   };
 
@@ -632,7 +690,6 @@ const TriangleBox = () => {
                 "polygon(0% 100%, 0% 0%, 50% 50%)", // left triangle
               ];
 
-              // Find clipPath index by quadrantPosition
               const index = defaultPositions.indexOf(q.quadrantPosition);
 
               return (
@@ -644,7 +701,7 @@ const TriangleBox = () => {
                     height: "100%",
                     clipPath: clipPaths[index],
                     backgroundColor: q.quadrantColor,
-                    transition: "background-color 0.3s ease",
+                    transition: "background-color 1s ease-in-out",
                   }}
                 />
               );
@@ -653,6 +710,7 @@ const TriangleBox = () => {
           {/* Grids for corners */}
 
           {/* Top-Right Grid */}
+          {/* {showQuadrants?.topRight && ( */}
           <Box
             gridArea="top-right"
             sx={{
@@ -661,28 +719,29 @@ const TriangleBox = () => {
               gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
               width: `${getLength("right") * cellSize}px`,
               height: `${getLength("top") * cellSize}px`,
-              //   marginLeft: "-39px",
-              ...margins.topright,
+              // ...margins.topright,
+              border: "none !important",
+              ...margins.rightList,
+              opacity: showQuadrants.topRight ? 1 : 0,
+              transition: "opacity 1.5s ease-in-out",
               "& > div": gridCell,
             }}
           >
             {noOfBoxes("top", "right").map((val, i) => (
-              <Box key={i} title={val}>
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+              >
                 {getNewIntersections("top", "right", val)}
-                {/* {getNewIntersections(
-                  defaultPositions[0],
-                  defaultPositions[1],
-                  val
-                )} */}
-                {/* {JSON.stringify(obj)} */}
-                {/* {getIntersections("top", "right", val)} */}
-                {/* {intersections} */}
               </Box>
             ))}
           </Box>
+          {/* )} */}
 
           {/* Bottom-Right Grid */}
-          {/* <Box
+          {/* {showQuadrants?.bottomRight && ( */}
+          <Box
             gridArea="bottom-right"
             sx={{
               display: "grid",
@@ -690,20 +749,27 @@ const TriangleBox = () => {
               gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
               width: `${getLength("right") * cellSize}px`,
               height: `${getLength("bottom") * cellSize}px`,
-              border: "1px solid #aaa",
-              //   marginLeft: "-39px",
+              border: "none !important",
               ...margins.topright,
+              opacity: showQuadrants.bottomRight ? 1 : 0,
+              transition: "opacity 1.5s ease-in-out",
               "& > div": gridCell,
             }}
           >
-            {Array.from({
-              length: getLength("bottom") * getLength("right"),
-            }).map((_, i) => (
-              <Box key={i}>{i + 1}</Box>
+            {noOfBoxes("bottom", "right").map((val, i) => (
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+              >
+                {getNewIntersections("bottom", "right", val)}
+              </Box>
             ))}
-          </Box> */}
+          </Box>
+          {/* )} */}
 
           {/* Bottom-Left Grid */}
+          {/* {showQuadrants?.bottomLeft && ( */}
           <Box
             gridArea="bottom-left"
             sx={{
@@ -711,49 +777,54 @@ const TriangleBox = () => {
               gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
               gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
               width: `${getLength("left") * cellSize}px`,
+              border: "none !important",
               height: `${getLength("bottom") * cellSize}px`,
-              //   marginRight: "-39px",
               ...margins.bottomleft,
+              opacity: showQuadrants.bottomLeft ? 1 : 0,
+              transition: "opacity 1.5s ease-in-out",
               "& > div": gridCell,
             }}
           >
             {noOfBoxes("left", "bottom").map((val, i) => (
-              <Box key={i} title={val}>
-                {/* {getNewIntersections("left", "bottom", val)} */}
-                {getNewIntersections(
-                  defaultPositions[3],
-                  defaultPositions[2],
-                  val
-                )}
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+              >
+                {getNewIntersections("bottom", "left", val)}
               </Box>
             ))}
           </Box>
+          {/* )} */}
 
           {/* Top-Left Grid */}
-          <Box
-            gridArea="top-left"
-            sx={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
-              gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
-              width: `${getLength("left") * cellSize}px`,
-              height: `${getLength("top") * cellSize}px`,
-              //   marginRight: "-39px",
-              ...margins.topleft,
-              "& > div": gridCell,
-            }}
-          >
-            {noOfBoxes("top", "left").map((val, i) => (
-              <Box key={i} title={val}>
-                {/* {getNewIntersections("top", "left", val)} */}
-                {getNewIntersections(
-                  defaultPositions[0],
-                  defaultPositions[3],
-                  val
-                )}
-              </Box>
-            ))}
-          </Box>
+          {
+            <Box
+              gridArea="top-left"
+              sx={{
+                display: showQuadrants.topLeft ? "grid" : "none",
+                gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
+                gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
+                width: `${getLength("left") * cellSize}px`,
+                height: `${getLength("top") * cellSize}px`,
+                border: "none !important",
+                opacity: showQuadrants.topLeft ? 1 : 0,
+                transition: "opacity 1.5s ease-in-out",
+                ...margins.topleft,
+                "& > div": gridCell,
+              }}
+            >
+              {noOfBoxes("top", "left").map((val, i) => (
+                <Box
+                  key={i}
+                  title={val}
+                  sx={{ border: "0.5px dashed gray !important" }}
+                >
+                  {getNewIntersections("top", "left", val)}
+                </Box>
+              ))}
+            </Box>
+          }
         </Box>
       </Box>
     </>
