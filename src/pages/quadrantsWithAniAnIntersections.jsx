@@ -19,6 +19,7 @@ import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import QuadrantButtonsOld from "./quadButtonOld";
+import CreateIcon from "@mui/icons-material/Create";
 
 const VerticalDivider = () => (
   <div
@@ -218,6 +219,7 @@ const QuadrantsWithAniAnIntersections = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [addNewAnchorEl, setAddNewAnchorEl] = useState(null);
   const [isOwnerAdding, setIsOwnerAdding] = useState(false);
+  const [isEditFlag, setIsEditFlag] = useState(null);
   const [newRowText, setNewRowText] = useState("");
   const [initialRotation, setInitialRotation] = useState(0);
   const [showEverything, setShowEverything] = useState(true);
@@ -365,26 +367,47 @@ const QuadrantsWithAniAnIntersections = () => {
 
   const handleSaveOfNewRow = () => {
     const inputValue = newRowText;
+
+    // Create row ID and type only if adding
+    const newRowObj = {
+      rowName: inputValue,
+      rowId: isEditFlag || crypto.randomUUID(),
+      rowType: isOwnerAdding ? "quandrantOwner" : "quandrantRow",
+    };
+
     setRotatedQuads((prevQuads) => {
-      const newRowObj = {
-        rowName: inputValue,
-        rowId: crypto.randomUUID(),
-        rowType: isOwnerAdding ? "quandrantOwner" : "quandrantRow",
-      };
-      let finalOutput = prevQuads?.map((quad) => {
+      const updatedQuads = prevQuads.map((quad) => {
+        // Only update "bottom" quadrant
+        if (quad.updatedPosition !== "bottom") return quad;
+
+        let updatedRowItems;
+
+        if (isEditFlag !== null) {
+          // Edit mode: update rowName of the matching row
+          updatedRowItems = quad.rowItems.map((item) =>
+            item.rowId === isEditFlag?.rowId
+              ? { ...item, rowName: inputValue }
+              : item
+          );
+        } else {
+          // Add mode: insert new row via your existing helper
+          updatedRowItems = latestRowItems(quad, newRowObj);
+        }
+
         return {
           ...quad,
-          rowItems:
-            quad.updatedPosition === "bottom"
-              ? latestRowItems(quad, newRowObj)
-              : quad.rowItems,
+          rowItems: updatedRowItems,
         };
       });
-      return rotateQuadrants(finalOutput);
+
+      return rotateQuadrants(updatedQuads);
     });
+
+    // Reset UI state
     setAddNewAnchorEl(null);
     setNewRowText("");
     setIsOwnerAdding(false);
+    setIsEditFlag(null);
   };
 
   const closePopover = () => {
@@ -674,7 +697,8 @@ const QuadrantsWithAniAnIntersections = () => {
                     ...config.labelPosition,
                     textAlign: "center",
                     p: 0.5,
-                    maxWidth: "75px",
+                    maxWidth: "78px",
+                    minWidth: "78px",
                     transform: `translate(-50%, -50%) rotate(${-initialRotation}deg)`,
                     transition: "transform 1.5s ease-in-out",
                   }}
@@ -699,6 +723,7 @@ const QuadrantsWithAniAnIntersections = () => {
                       <React.Fragment key={item.rowId}>
                         {/* <Tooltip title={item.rowName} arrow placement="right"> */}
                         <Typography
+                          id={item.rowId}
                           sx={{
                             color:
                               item.rowType === "quandrantOwner"
@@ -761,6 +786,7 @@ const QuadrantsWithAniAnIntersections = () => {
                                     return;
                                   }
                                   setAddNewAnchorEl(e.currentTarget);
+                                  setIsEditFlag(null);
                                 }}
                               >
                                 <AddBoxIcon
@@ -786,6 +812,7 @@ const QuadrantsWithAniAnIntersections = () => {
                                     }
                                     setAddNewAnchorEl(e.currentTarget);
                                     setIsOwnerAdding(() => true);
+                                    setIsEditFlag(null);
                                   }}
                                 >
                                   <AddBoxIcon
@@ -801,7 +828,50 @@ const QuadrantsWithAniAnIntersections = () => {
                               )}
                             </span>
                           ) : (
-                            `${item.rowName}`
+                            <>
+                              <Tooltip
+                                title={
+                                  item.rowName?.length > 45 ? item.rowName : ""
+                                }
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      width:
+                                        quad?.updatedPosition === "bottom"
+                                          ? "90%"
+                                          : "100%",
+                                      overflow: "hidden",
+                                    }}
+                                  >
+                                    {item.rowName}
+                                  </span>
+                                  {quad?.updatedPosition === "bottom" && (
+                                    <CreateIcon
+                                      onClick={(e) => {
+                                        if (quad.updatedPosition === "bottom") {
+                                          setAddNewAnchorEl(e.currentTarget);
+                                          setNewRowText(item.rowName);
+                                          setIsEditFlag(item);
+                                          setIsOwnerAdding(() => false);
+                                        }
+                                      }}
+                                      style={{
+                                        paddingLeft: "4px",
+                                        fontSize: "16px",
+                                        color: "#1976d2",
+                                        cursor : "pointer"
+                                      }}
+                                    />
+                                  )}
+                                </Box>
+                              </Tooltip>
+                            </>
                           )}
                         </Typography>
                         {/* </Tooltip> */}
@@ -948,6 +1018,7 @@ const QuadrantsWithAniAnIntersections = () => {
             setAddNewAnchorEl(null);
             setNewRowText("");
             setIsOwnerAdding(false);
+            setIsEditFlag(null);
           }}
           anchorOrigin={{
             vertical: "bottom",
@@ -959,9 +1030,16 @@ const QuadrantsWithAniAnIntersections = () => {
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
             >
-              <span style={{ margin: "2px 5px 7px 2px", fontSize: "14px" }}>
-                Add New {isOwnerAdding ? "Owner" : "Row"}
-              </span>
+              {newRowText === "" && (
+                <span style={{ margin: "2px 5px 7px 2px", fontSize: "14px" }}>
+                  Add New {isOwnerAdding ? "Owner" : "Row"}
+                </span>
+              )}
+              {newRowText !== "" && (
+                <span style={{ margin: "2px 5px 7px 2px", fontSize: "14px" }}>
+                  Edit
+                </span>
+              )}
               <span
                 onClick={() => {
                   setAddNewAnchorEl(null);

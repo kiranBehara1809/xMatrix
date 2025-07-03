@@ -37,7 +37,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<TriangleBox />} />
+        <Route path="/home" element={<QuadrantsWithAniAnIntersections />} />
       </Routes>
     </Router>
   );
