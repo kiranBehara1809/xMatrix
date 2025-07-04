@@ -3,6 +3,7 @@ const QUADRANTS_CONSTANT = {
     {
       quadrantName: "Top Level Improvements",
       quadrantColor: "#2979ff",
+      qRefColor: "blue",
       quadrantPosition: "top",
       basePosition: "top",
       updatedPosition: "",
@@ -142,6 +143,7 @@ const QUADRANTS_CONSTANT = {
     {
       quadrantName: "Metrics to Improve",
       quadrantColor: "#ff9100",
+      qRefColor: "orange",
       quadrantPosition: "right",
       basePosition: "right",
       updatedPosition: "",
@@ -197,6 +199,7 @@ const QUADRANTS_CONSTANT = {
     {
       quadrantName: "Long-Term Objectives",
       quadrantColor: "#ff1744",
+      qRefColor: "red",
       quadrantPosition: "bottom",
       basePosition: "bottom",
       updatedPosition: "",
@@ -228,6 +231,7 @@ const QUADRANTS_CONSTANT = {
     {
       quadrantName: "Annual Objectives",
       quadrantColor: "#00e676",
+      qRefColor: "lightGreen",
       quadrantPosition: "left",
       basePosition: "left",
       updatedPosition: "",

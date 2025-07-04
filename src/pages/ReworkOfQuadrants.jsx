@@ -149,6 +149,13 @@ const LegendComponent = () => {
   );
 };
 
+const BASE_COLOR_MAPPING = {
+  "#00e676": "Annual Objectives",
+  "#ff1744": "Long-Term Objectives",
+  "#ff9100": "Metrics to Improve",
+  "#2979ff": "Top Level Improvements",
+};
+
 const MAPPING = {
   RL: {
     label: "Relationship",
@@ -361,6 +368,7 @@ const TriangleBox = () => {
       });
       setHideLists(() => false);
     }, 1500);
+    console.log("data", data);
   }, [data]);
 
   const getQuadrant = (pos) =>
@@ -697,12 +705,20 @@ const TriangleBox = () => {
             }}
           >
             {data.quadrants.map((q, i) => {
-              // Define clip paths in order top, right, bottom, left
+              // Define clip paths for top, right, bottom, left
               const clipPaths = [
-                "polygon(0% 0%, 100% 0%, 50% 50%)", // top triangle
-                "polygon(100% 0%, 100% 100%, 50% 50%)", // right triangle
-                "polygon(100% 100%, 0% 100%, 50% 50%)", // bottom triangle
-                "polygon(0% 100%, 0% 0%, 50% 50%)", // left triangle
+                "polygon(0% 0%, 100% 0%, 50% 50%)", // top
+                "polygon(100% 0%, 100% 100%, 50% 50%)", // right
+                "polygon(100% 100%, 0% 100%, 50% 50%)", // bottom
+                "polygon(0% 100%, 0% 0%, 50% 50%)", // left
+              ];
+
+              // Approximate text positions for each triangle
+              const textPositions = [
+                { top: "1%", left: "50%", transform: "translateX(-50%)" }, // top center
+                { top: "50%", right: "1%", transform: "translateY(-50%)" }, // right center
+                { bottom: "1%", left: "50%", transform: "translateX(-50%)" }, // bottom center
+                { top: "50%", left: "1%", transform: "translateY(-50%)" }, // left center
               ];
 
               const index = defaultPositions.indexOf(q.quadrantPosition);
@@ -716,9 +732,28 @@ const TriangleBox = () => {
                     height: "100%",
                     clipPath: clipPaths[index],
                     backgroundColor: q.quadrantColor,
-                    transition: "background-color 2s ease-in",
+                    transition: "background-color 3s ease-in",
                   }}
-                />
+                >
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      color: "white",
+                      pointerEvents: "none",
+                      maxWidth: "70px",
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      padding: "2px 5px",
+                      textAlign: "center",
+                      fontSize: "10px",
+                      borderRadius: "8px",
+                      opacity: !hideLists ? 1 : 0,
+                      transition: "opacity 1.5s ease",
+                      ...textPositions[index],
+                    }}
+                  >
+                    {BASE_COLOR_MAPPING[q.quadrantColor]}
+                  </Box>
+                </Box>
               );
             })}
           </Box>
