@@ -252,6 +252,7 @@ const TriangleBox = () => {
     "bottom",
     "left",
   ]);
+  const [hideLists, setHideLists] = useState(false);
   const [showQuadrants, setShowQuadrants] = useState({
     topRight: true,
     bottomRight: true,
@@ -294,6 +295,7 @@ const TriangleBox = () => {
     return () => {
       setDefaultPositions(["top", "right", "bottom", "left"]);
       setData(JSON.parse(JSON.stringify(QUADRANTS_CONSTANT)));
+      setHideLists(() => false);
       setShowQuadrants((prev) => {
         return {
           topRight: true,
@@ -308,6 +310,15 @@ const TriangleBox = () => {
   useEffect(() => {
     const blueQuadrant = data?.quadrants?.find((x) => x.basePosition === "top");
     if (!blueQuadrant) return;
+    // Step 1: Hide all immediately
+    setShowQuadrants((prev) => {
+      return {
+        topRight: false,
+        bottomRight: false,
+        bottomLeft: false,
+        topLeft: false,
+      };
+    });
 
     let targetState = {
       topRight: true,
@@ -339,22 +350,17 @@ const TriangleBox = () => {
       };
     }
 
-    // Step 1: Hide all immediately
-    setShowQuadrants({
-      topRight: false,
-      bottomRight: false,
-      bottomLeft: false,
-      topLeft: false,
-    });
-
     // Step 2: Show one by one based on targetState
-    const keys = Object.keys(targetState);
-    keys.forEach((key, index) => {
-      setShowQuadrants((prev) => ({
-        ...prev,
-        [key]: targetState[key],
-      }));
-    });
+    setTimeout(() => {
+      const keys = Object.keys(targetState);
+      keys.forEach((key, index) => {
+        setShowQuadrants((prev) => ({
+          ...prev,
+          [key]: targetState[key],
+        }));
+      });
+      setHideLists(() => false);
+    }, 1500);
   }, [data]);
 
   const getQuadrant = (pos) =>
@@ -384,6 +390,7 @@ const TriangleBox = () => {
   };
 
   const rotateEntire = ({ index, buttonClick }) => {
+    setHideLists(() => true);
     setData((prev) => {
       // triggerAnimationSequence();
       const positions = ["top", "right", "bottom", "left"];
@@ -432,7 +439,6 @@ const TriangleBox = () => {
   };
 
   useEffect(() => {
-    console.log(defaultPositions);
     if (defaultPositions[0] === "right") {
       setMargin((prev) => {
         return {
@@ -596,6 +602,10 @@ const TriangleBox = () => {
               alignItems: "center",
               height: `${getLength("top") * cellSize}px`,
               width: "200px",
+              opacity: !hideLists ? 1 : 0,
+              transform: !hideLists ? "scale(1)" : "scale(0.95)",
+              pointerEvents: !hideLists ? "auto" : "none",
+              transition: "opacity 1s ease, transform 1s ease",
               background: "lightgray",
               //   ...margins.topright,
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
@@ -620,10 +630,9 @@ const TriangleBox = () => {
               width: "200px",
               transform: "rotate(-90deg)",
               background: "lightgray",
-              //   marginLeft: "-39px",
-              //   ...(defaultPositions[0] === "right" && {
-              //     ...margins.topright,
-              //   }),
+              opacity: !hideLists ? 1 : 0,
+              pointerEvents: !hideLists ? "auto" : "none",
+              transition: "opacity 1.5s ease, transform 1.5s ease",
               ...margins.rightList,
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
@@ -643,6 +652,10 @@ const TriangleBox = () => {
               alignItems: "center",
               height: `${getLength("bottom") * cellSize}px`,
               width: "200px",
+              opacity: !hideLists ? 1 : 0,
+              transform: !hideLists ? "scale(1)" : "scale(0.95)",
+              pointerEvents: !hideLists ? "auto" : "none",
+              transition: "opacity 1.5s ease, transform 1.5s ease",
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
           >
@@ -663,7 +676,9 @@ const TriangleBox = () => {
               width: "200px",
               transform: "rotate(-90deg)",
               background: "lightGray",
-              //   marginRight: "-39px",
+              opacity: !hideLists ? 1 : 0,
+              pointerEvents: !hideLists ? "auto" : "none",
+              transition: "opacity 1.5s ease, transform 1.5s ease",
               ...margins.leftList,
             }}
           >
@@ -701,7 +716,7 @@ const TriangleBox = () => {
                     height: "100%",
                     clipPath: clipPaths[index],
                     backgroundColor: q.quadrantColor,
-                    transition: "background-color 1s ease-in-out",
+                    transition: "background-color 2s ease-in",
                   }}
                 />
               );
@@ -711,6 +726,36 @@ const TriangleBox = () => {
 
           {/* Top-Right Grid */}
           {/* {showQuadrants?.topRight && ( */}
+          {/* TOP-LEFT QUADRANT */}
+          <Box
+            gridArea="top-left"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
+              gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
+              width: `${getLength("left") * cellSize}px`,
+              height: `${getLength("top") * cellSize}px`,
+              border: "none !important",
+              ...margins.topleft,
+              opacity: showQuadrants.topLeft ? 1 : 0,
+              transform: showQuadrants.topLeft ? "scale(1)" : "scale(0.95)",
+              pointerEvents: showQuadrants.topLeft ? "auto" : "none",
+              transition: "opacity 1.5s ease-out, transform 1.5s ease-out",
+              "& > div": gridCell,
+            }}
+          >
+            {noOfBoxes("top", "left").map((val, i) => (
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+              >
+                {getNewIntersections("top", "left", val)}
+              </Box>
+            ))}
+          </Box>
+
+          {/* TOP-RIGHT QUADRANT */}
           <Box
             gridArea="top-right"
             sx={{
@@ -719,11 +764,12 @@ const TriangleBox = () => {
               gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
               width: `${getLength("right") * cellSize}px`,
               height: `${getLength("top") * cellSize}px`,
-              // ...margins.topright,
               border: "none !important",
               ...margins.rightList,
               opacity: showQuadrants.topRight ? 1 : 0,
-              transition: "opacity 1.5s ease-in-out",
+              transform: showQuadrants.topRight ? "scale(1)" : "scale(0.95)",
+              pointerEvents: showQuadrants.topRight ? "auto" : "none",
+              transition: "opacity 1s ease-out, transform 1s ease-out",
               "& > div": gridCell,
             }}
           >
@@ -737,39 +783,8 @@ const TriangleBox = () => {
               </Box>
             ))}
           </Box>
-          {/* )} */}
 
-          {/* Bottom-Right Grid */}
-          {/* {showQuadrants?.bottomRight && ( */}
-          <Box
-            gridArea="bottom-right"
-            sx={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
-              gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
-              width: `${getLength("right") * cellSize}px`,
-              height: `${getLength("bottom") * cellSize}px`,
-              border: "none !important",
-              ...margins.topright,
-              opacity: showQuadrants.bottomRight ? 1 : 0,
-              transition: "opacity 1.5s ease-in-out",
-              "& > div": gridCell,
-            }}
-          >
-            {noOfBoxes("bottom", "right").map((val, i) => (
-              <Box
-                key={i}
-                title={val}
-                sx={{ border: "0.5px dashed gray !important" }}
-              >
-                {getNewIntersections("bottom", "right", val)}
-              </Box>
-            ))}
-          </Box>
-          {/* )} */}
-
-          {/* Bottom-Left Grid */}
-          {/* {showQuadrants?.bottomLeft && ( */}
+          {/* BOTTOM-LEFT QUADRANT */}
           <Box
             gridArea="bottom-left"
             sx={{
@@ -777,11 +792,13 @@ const TriangleBox = () => {
               gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
               gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
               width: `${getLength("left") * cellSize}px`,
-              border: "none !important",
               height: `${getLength("bottom") * cellSize}px`,
+              border: "none !important",
               ...margins.bottomleft,
               opacity: showQuadrants.bottomLeft ? 1 : 0,
-              transition: "opacity 1.5s ease-in-out",
+              transform: showQuadrants.bottomLeft ? "scale(1)" : "scale(0.95)",
+              pointerEvents: showQuadrants.bottomLeft ? "auto" : "none",
+              transition: "opacity 1s ease-out, transform 1s ease-out",
               "& > div": gridCell,
             }}
           >
@@ -795,36 +812,35 @@ const TriangleBox = () => {
               </Box>
             ))}
           </Box>
-          {/* )} */}
 
-          {/* Top-Left Grid */}
-          {
-            <Box
-              gridArea="top-left"
-              sx={{
-                display: showQuadrants.topLeft ? "grid" : "none",
-                gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
-                gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
-                width: `${getLength("left") * cellSize}px`,
-                height: `${getLength("top") * cellSize}px`,
-                border: "none !important",
-                opacity: showQuadrants.topLeft ? 1 : 0,
-                transition: "opacity 1.5s ease-in-out",
-                ...margins.topleft,
-                "& > div": gridCell,
-              }}
-            >
-              {noOfBoxes("top", "left").map((val, i) => (
-                <Box
-                  key={i}
-                  title={val}
-                  sx={{ border: "0.5px dashed gray !important" }}
-                >
-                  {getNewIntersections("top", "left", val)}
-                </Box>
-              ))}
-            </Box>
-          }
+          {/* BOTTOM-RIGHT QUADRANT */}
+          <Box
+            gridArea="bottom-right"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
+              gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
+              width: `${getLength("right") * cellSize}px`,
+              height: `${getLength("bottom") * cellSize}px`,
+              border: "none !important",
+              ...margins.topright, // consider renaming if reused here
+              opacity: showQuadrants.bottomRight ? 1 : 0,
+              transform: showQuadrants.bottomRight ? "scale(1)" : "scale(0.95)",
+              pointerEvents: showQuadrants.bottomRight ? "auto" : "none",
+              transition: "opacity 1s ease-out, transform 1s ease-out",
+              "& > div": gridCell,
+            }}
+          >
+            {noOfBoxes("bottom", "right").map((val, i) => (
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+              >
+                {getNewIntersections("bottom", "right", val)}
+              </Box>
+            ))}
+          </Box>
         </Box>
       </Box>
     </>
