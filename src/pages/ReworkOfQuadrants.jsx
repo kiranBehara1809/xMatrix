@@ -732,7 +732,8 @@ const TriangleBox = () => {
                     height: "100%",
                     clipPath: clipPaths[index],
                     backgroundColor: q.quadrantColor,
-                    transition: "background-color 3s ease-in",
+                    transform: !hideLists ? "rotate(0deg)" : "rotate(360deg)",
+                    transition: "transform 1s ease-in",
                   }}
                 >
                   <Box
