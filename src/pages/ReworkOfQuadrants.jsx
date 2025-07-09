@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -6,13 +6,20 @@ import {
   Divider,
   Avatar,
   Collapse,
+  alpha,
+  Tooltip,
+  Popover,
+  TextField,
 } from "@mui/material";
 import { QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
 import QuadrantButtons from "./quadrantButtons";
 import CircleIcon from "@mui/icons-material/Circle";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 import AddBoxIcon from "@mui/icons-material/AddBox";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
+import CloseIcon from "@mui/icons-material/Close";
 
 const VerticalDivider = () => (
   <div
@@ -224,28 +231,85 @@ const initialData = {
   ],
 };
 
-const QuadrantListItem = ({ item, i }) => {
+function isTextOverflowing(i, position) {
+  const el = document.getElementById(`${i}+${position}`);
+  if (el) return el.scrollWidth > el.clientWidth;
+}
+
+const QuadrantListItem = ({
+  item,
+  i,
+  position,
+  editIconHanlder = () => {},
+}) => {
+  const textRef = useRef(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    if (textRef.current) {
+      setShowTooltip(isTextOverflowing(textRef.current));
+    }
+  }, [item.rowName]);
+
   return (
-    <>
-      <Typography
-        key={i}
-        variant="caption"
-        sx={{
-          color: "#000",
-          maxWidth: "100%",
-          minWidth: "100%",
-          minHeight: 30,
-          fontSize: "11px",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          lineHeight: 2.66,
-          textOverflow: "ellipsis",
-          borderBottom: "0.5px dotted",
-        }}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: "100%",
+        borderBottom: "0.5px dotted #000",
+      }}
+    >
+      <Tooltip
+        title={isTextOverflowing(i, position) ? item.rowName : ""}
+        arrow
+        placement="left"
       >
-        {item.rowName}
-      </Typography>
-    </>
+        <Typography
+          id={`${i}+${position}`}
+          ref={textRef}
+          variant="caption"
+          sx={{
+            color: item.rowType === "quandrantRow" ? "#000" : "#a72c4b",
+            width: "100%",
+            minHeight: 30,
+            fontSize: "11px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            lineHeight: 2.66,
+            p: "0px 2px",
+            textOverflow: "ellipsis",
+            display: "inline-block", // required for ellipsis
+          }}
+        >
+          {item.rowName}
+        </Typography>
+      </Tooltip>
+
+      {position === "bottom" && (
+        <>
+          <EditIcon
+            onClick={(e) => editIconHanlder(e, item)}
+            sx={{
+              fontSize: 13,
+              cursor: "pointer",
+              pr: "2px",
+              color: "#1976d2",
+            }}
+          />
+          <DeleteIcon
+            sx={{
+              fontSize: 13,
+              cursor: "pointer",
+              pr: "2px",
+
+              color: "red",
+            }}
+          />
+        </>
+      )}
+    </Box>
   );
 };
 
@@ -260,6 +324,20 @@ const TriangleBox = () => {
     "left",
   ]);
   const [hideLists, setHideLists] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [addNewAnchorEl, setAddNewAnchorEl] = useState(null);
+  const [tempVars, setTempVars] = useState({
+    selectedRow: null,
+    selectedCol: null,
+    selectedPopoverValue: null,
+  });
+  const [editDeleteTempVars, setEditDeleteTempVars] = useState({
+    editFlag: false,
+    rowText: "",
+    rowObj: null,
+    isOwnerAdding: false,
+    popoverTitle: "",
+  });
   const [showQuadrants, setShowQuadrants] = useState({
     topRight: true,
     bottomRight: true,
@@ -297,6 +375,59 @@ const TriangleBox = () => {
     fontSize: "0.6rem",
     color: "#333",
   };
+
+  useEffect(() => {
+    const userName = localStorage.getItem("userName");
+    if (userName === "reader") {
+      return;
+    }
+    const { selectedRow, selectedCol, selectedPopoverValue } = tempVars;
+    if (selectedRow && selectedCol && selectedPopoverValue) {
+      const rowId = selectedRow.rowId;
+      const colId = selectedCol.rowId;
+      const intersectionType = selectedPopoverValue.value;
+      setData((prev) => {
+        console.log("prev", prev);
+        let finalOuptut = prev.quadrants.map((quad) => {
+          const updatedRowItems = quad.quadrantListItems.map((item) => {
+            if (item.rowId !== rowId && item.rowId !== colId) {
+              return item;
+            }
+
+            let newIntersections = [...(item.intersections || [])];
+            const existingIndex = newIntersections.findIndex(
+              (i) => i.rowId === rowId || i.rowId === colId
+            );
+            // If exists, update type
+            if (existingIndex !== -1) {
+              newIntersections[existingIndex] = {
+                ...newIntersections[existingIndex],
+                type: intersectionType === "EMPTY" ? "" : intersectionType,
+              };
+            } else {
+              // Else push new intersection
+              newIntersections.push({
+                rowId: item.rowId === rowId ? colId : rowId,
+                type: intersectionType === "EMPTY" ? "" : intersectionType,
+              });
+            }
+            return {
+              ...item,
+              intersections: newIntersections,
+            };
+          });
+
+          return {
+            ...quad,
+            quadrantListItems: updatedRowItems,
+          };
+        });
+        return { quadrants: finalOuptut };
+      });
+
+      closePopover();
+    }
+  }, [tempVars]);
 
   useEffect(() => {
     return () => {
@@ -368,7 +499,6 @@ const TriangleBox = () => {
       });
       setHideLists(() => false);
     }, 1500);
-    console.log("data", data);
   }, [data]);
 
   const getQuadrant = (pos) =>
@@ -515,19 +645,86 @@ const TriangleBox = () => {
     const qAItems = getQuadrant(a)?.quadrantListItems;
     const qBItems = getQuadrant(b)?.quadrantListItems;
     let mappeditems = [];
-    qAItems?.map((qa) => {
-      qBItems?.map((qb) => {
+    let outerLoop = qAItems;
+    let innerLoop = qBItems;
+    if (a === "left" && b === "bottom") {
+      outerLoop = qBItems;
+      innerLoop = qAItems;
+    }
+    outerLoop?.map((qa) => {
+      innerLoop?.map((qb) => {
         mappeditems.push(`${qa.rowId}~~X~~${qb.rowId}`);
       });
     });
     return mappeditems;
   };
 
+  const closePopover = () => {
+    setAnchorEl(null);
+    setTempVars((prev) => ({
+      ...prev,
+      selectedRow: null,
+      selectedCol: null,
+      selectedPopoverValue: null,
+    }));
+  };
+
+  const closeAddPopover = () => {
+    setAddNewAnchorEl(null);
+    setEditDeleteTempVars((prev) => {
+      return {
+        ...prev,
+        editFlag: false,
+        isOwnerAdding: false,
+        rowText: "",
+        rowObj: null,
+        popoverTitle: "",
+      };
+    });
+  };
+
+  const editButtonClickHandler = (event, item) => {
+    setAddNewAnchorEl(event.currentTarget);
+    setEditDeleteTempVars((prev) => {
+      return {
+        ...prev,
+        editFlag: true,
+        isOwnerAdding: item.rowType === "quandrantOwner",
+        rowText: item.rowName,
+        rowObj: item,
+        popoverTitle: "Edit Row Item",
+      };
+    });
+  };
+
+  const showPlotMapperPopover = (e, obj) => {
+    setAnchorEl(e.currentTarget);
+    const partsOfMap = obj.split("~~X~~");
+    const allQItems = QUADRANTS_CONSTANT.quadrants?.map((x) => {
+      return x?.quadrantListItems;
+    });
+
+    let row = null;
+    let column = null;
+    allQItems?.map((qaItem, i) => {
+      if (!row) {
+        row = qaItem?.find((x) => x.rowId === partsOfMap[0]);
+      }
+      if (!column) column = qaItem?.find((x) => x.rowId === partsOfMap[1]);
+    });
+    setTempVars((prev) => ({
+      ...prev,
+      selectedRow: row,
+      selectedCol: column,
+      selectedPopoverValue: null,
+    }));
+  };
+
   const getNewIntersections = (quadrantA, quadrantB, obj) => {
     const partsOfMap = obj.split("~~X~~");
     let foundIntersections = [];
 
-    const allQItems = QUADRANTS_CONSTANT.quadrants?.map((x) => {
+    const allQItems = data.quadrants?.map((x) => {
       return x?.quadrantListItems;
     });
 
@@ -620,9 +817,7 @@ const TriangleBox = () => {
             }}
           >
             {getQuadrant("top").quadrantListItems.map((item, i) => (
-              <>
-                <QuadrantListItem item={item} i={i} />
-              </>
+              <QuadrantListItem item={item} i={i} position="top" key={i} />
             ))}
           </Box>
 
@@ -646,7 +841,7 @@ const TriangleBox = () => {
             }}
           >
             {getQuadrant("right").quadrantListItems.map((item, i) => (
-              <QuadrantListItem item={item} i={i} />
+              <QuadrantListItem item={item} i={i} position="right" key={i} />
             ))}
           </Box>
 
@@ -658,7 +853,7 @@ const TriangleBox = () => {
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
-              height: `${getLength("bottom") * cellSize}px`,
+              height: `${getLength("bottom") * cellSize + 30}px`,
               width: "200px",
               opacity: !hideLists ? 1 : 0,
               transform: !hideLists ? "scale(1)" : "scale(0.95)",
@@ -668,8 +863,35 @@ const TriangleBox = () => {
             }}
           >
             {getQuadrant("bottom").quadrantListItems.map((item, i) => (
-              <QuadrantListItem item={item} i={i} />
+              <QuadrantListItem
+                item={item}
+                i={i}
+                position="bottom"
+                key={i}
+                editIconHanlder={editButtonClickHandler}
+              />
             ))}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                minHeight: 30,
+              }}
+            >
+              <AddBoxIcon
+                sx={{
+                  fontSize: 13,
+                  cursor: "pointer",
+                  pr: "2px",
+                  color: "#1976d2",
+                }}
+              />
+              <Typography variant="caption" sx={{ color: "#000" }}>
+                Add New
+              </Typography>
+            </Box>
           </Box>
 
           {/* Left - horizontal */}
@@ -691,7 +913,7 @@ const TriangleBox = () => {
             }}
           >
             {getQuadrant("left").quadrantListItems.map((item, i) => (
-              <QuadrantListItem item={item} i={i} />
+              <QuadrantListItem item={item} i={i} position="left" key={i} />
             ))}
           </Box>
 
@@ -731,7 +953,7 @@ const TriangleBox = () => {
                     width: "100%",
                     height: "100%",
                     clipPath: clipPaths[index],
-                    backgroundColor: q.quadrantColor,
+                    backgroundColor: alpha(q.quadrantColor, 0.7),
                     transform: !hideLists ? "rotate(0deg)" : "rotate(360deg)",
                     transition: "transform 1s ease-in",
                   }}
@@ -785,6 +1007,7 @@ const TriangleBox = () => {
                 key={i}
                 title={val}
                 sx={{ border: "0.5px dashed gray !important" }}
+                onClick={(e) => showPlotMapperPopover(e, val)}
               >
                 {getNewIntersections("top", "left", val)}
               </Box>
@@ -814,6 +1037,7 @@ const TriangleBox = () => {
                 key={i}
                 title={val}
                 sx={{ border: "0.5px dashed gray !important" }}
+                onClick={(e) => showPlotMapperPopover(e, val)}
               >
                 {getNewIntersections("top", "right", val)}
               </Box>
@@ -830,6 +1054,7 @@ const TriangleBox = () => {
               width: `${getLength("left") * cellSize}px`,
               height: `${getLength("bottom") * cellSize}px`,
               border: "none !important",
+              mt: "-30px",
               ...margins.bottomleft,
               opacity: showQuadrants.bottomLeft ? 1 : 0,
               transform: showQuadrants.bottomLeft ? "scale(1)" : "scale(0.95)",
@@ -843,6 +1068,7 @@ const TriangleBox = () => {
                 key={i}
                 title={val}
                 sx={{ border: "0.5px dashed gray !important" }}
+                onClick={(e) => showPlotMapperPopover(e, val)}
               >
                 {getNewIntersections("bottom", "left", val)}
               </Box>
@@ -859,6 +1085,7 @@ const TriangleBox = () => {
               width: `${getLength("right") * cellSize}px`,
               height: `${getLength("bottom") * cellSize}px`,
               border: "none !important",
+              mt: "-30px",
               ...margins.topright, // consider renaming if reused here
               opacity: showQuadrants.bottomRight ? 1 : 0,
               transform: showQuadrants.bottomRight ? "scale(1)" : "scale(0.95)",
@@ -872,6 +1099,7 @@ const TriangleBox = () => {
                 key={i}
                 title={val}
                 sx={{ border: "0.5px dashed gray !important" }}
+                onClick={(e) => showPlotMapperPopover(e, val)}
               >
                 {getNewIntersections("bottom", "right", val)}
               </Box>
@@ -879,6 +1107,129 @@ const TriangleBox = () => {
           </Box>
         </Box>
       </Box>
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => closePopover()}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        {Object.entries(MAPPING).map(([key, value]) => (
+          <Box
+            key={key}
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "center",
+              padding: 1,
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: alpha("#000", 0.1),
+              },
+            }}
+            onClick={() => {
+              setTempVars((prev) => {
+                return {
+                  ...prev,
+                  selectedPopoverValue: value,
+                };
+              });
+            }}
+          >
+            <span style={{ paddingRight: "8px", fontSize: "16px" }}>
+              {value.icon}
+            </span>
+            <span style={{ textAlign: "start", fontSize: "12px" }}>
+              {value.label}
+            </span>
+          </Box>
+        ))}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            padding: 1,
+            cursor: "pointer",
+            "&:hover": {
+              backgroundColor: alpha("#000", 0.1),
+            },
+          }}
+          onClick={() => {
+            setTempVars((prev) => {
+              return {
+                ...prev,
+                selectedPopoverValue: "EMPTY",
+              };
+            });
+          }}
+        >
+          <span style={{ paddingRight: "8px", fontSize: "16px" }}>
+            <DoDisturbIcon style={{ fontSize: "10px", color: "#000" }} />
+          </span>
+          <span style={{ textAlign: "start", fontSize: "12px" }}>None</span>
+        </Box>
+      </Popover>
+
+      <Popover
+        open={Boolean(addNewAnchorEl)}
+        anchorEl={addNewAnchorEl}
+        onClose={() => closeAddPopover()}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        <Box sx={{ p: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              minHeight: 25,
+              minWidth: 300,
+            }}
+          >
+            <Typography variant="body2">
+              {editDeleteTempVars?.popoverTitle}
+            </Typography>
+            <CloseIcon
+              style={{ fontSize: 13, cursor: "pointer" }}
+              onClick={closeAddPopover}
+            />
+          </Box>
+          <TextField
+            size="small"
+            placeholder="Enter here..."
+            variant="outlined"
+            sx={{
+              minWidth: "300px",
+              "& .MuiInputBase-input": {
+                fontSize: "13px",
+              },
+            }}
+            value={editDeleteTempVars?.rowText}
+            autoFocus
+            onChange={(e) =>
+              setEditDeleteTempVars((prev) => {
+                return {
+                  ...prev,
+                  rowText: e.target.value,
+                };
+              })
+            }
+          />
+
+          <Button
+            sx={{ ml: 1, textTransform: "capitalize" }}
+            variant="contained"
+          >
+            Save
+          </Button>
+        </Box>
+      </Popover>
     </>
   );
 };
