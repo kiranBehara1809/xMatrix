@@ -198,39 +198,6 @@ const MAPPING = {
 
 const cellSize = 30;
 
-const initialData = {
-  quadrants: [
-    {
-      quadrantName: "a",
-      quadrantColor: "red",
-      quadrantPosition: "top",
-      updatedPosition: "",
-      quadrantListItems: ["Top 1", "Top 2", "Top 3", "Top 4"],
-    },
-    {
-      quadrantName: "b",
-      quadrantColor: "blue",
-      quadrantPosition: "right",
-      updatedPosition: "",
-      quadrantListItems: ["Right 1", "Right 2"],
-    },
-    {
-      quadrantName: "c",
-      quadrantColor: "green",
-      quadrantPosition: "bottom",
-      updatedPosition: "",
-      quadrantListItems: ["Bottom 1", "Bottom 2"],
-    },
-    {
-      quadrantName: "d",
-      quadrantColor: "yellow",
-      quadrantPosition: "left",
-      updatedPosition: "",
-      quadrantListItems: ["Left 1", "Left 2", "Left 3"],
-    },
-  ],
-};
-
 function isTextOverflowing(i, position) {
   const el = document.getElementById(`${i}+${position}`);
   if (el) return el.scrollWidth > el.clientWidth;
@@ -240,7 +207,7 @@ const QuadrantListItem = ({
   item,
   i,
   position,
-  editIconHanlder = () => {},
+  actionIconHanlder = () => {},
 }) => {
   const textRef = useRef(null);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -259,12 +226,20 @@ const QuadrantListItem = ({
         justifyContent: "space-between",
         width: "100%",
         borderBottom: "0.5px dotted #000",
+        "&:hover": {
+          width: position === "bottom" && item.rowName !== "" ? "85%" : "100%",
+          transform:
+            position === "bottom" && item.rowName !== ""
+              ? "scale(1.15)"
+              : "scale(1)",
+          transition: "transform 1s ease",
+        },
       }}
     >
       <Tooltip
         title={isTextOverflowing(i, position) ? item.rowName : ""}
         arrow
-        placement="left"
+        placement="left-start"
       >
         <Typography
           id={`${i}+${position}`}
@@ -287,10 +262,10 @@ const QuadrantListItem = ({
         </Typography>
       </Tooltip>
 
-      {position === "bottom" && (
+      {position === "bottom" && item.rowName !== "" && (
         <>
           <EditIcon
-            onClick={(e) => editIconHanlder(e, item)}
+            onClick={(e) => actionIconHanlder(e, item, "edit")}
             sx={{
               fontSize: 13,
               cursor: "pointer",
@@ -299,6 +274,7 @@ const QuadrantListItem = ({
             }}
           />
           <DeleteIcon
+            onClick={(e) => actionIconHanlder(e, item, "delete")}
             sx={{
               fontSize: 13,
               cursor: "pointer",
@@ -335,6 +311,7 @@ const TriangleBox = () => {
     editFlag: false,
     rowText: "",
     rowObj: null,
+    action: null,
     isOwnerAdding: false,
     popoverTitle: "",
   });
@@ -387,7 +364,6 @@ const TriangleBox = () => {
       const colId = selectedCol.rowId;
       const intersectionType = selectedPopoverValue.value;
       setData((prev) => {
-        console.log("prev", prev);
         let finalOuptut = prev.quadrants.map((quad) => {
           const updatedRowItems = quad.quadrantListItems.map((item) => {
             if (item.rowId !== rowId && item.rowId !== colId) {
@@ -504,29 +480,6 @@ const TriangleBox = () => {
   const getQuadrant = (pos) =>
     data.quadrants.find((q) => q.quadrantPosition === pos);
 
-  const triggerAnimationSequence = () => {
-    const keys = Object.keys(animation);
-
-    // Step 1: Hide all
-    setAnimation((prev) => {
-      const updated = {};
-      keys.forEach((key) => {
-        updated[key] = false;
-      });
-      return updated;
-    });
-
-    // Step 2: Show one by one with delay
-    keys.forEach((key, index) => {
-      setTimeout(() => {
-        setAnimation((prev) => ({
-          ...prev,
-          [key]: true,
-        }));
-      }, 300 * index); // 300ms delay between each item
-    });
-  };
-
   const rotateEntire = ({ index, buttonClick }) => {
     setHideLists(() => true);
     setData((prev) => {
@@ -621,22 +574,6 @@ const TriangleBox = () => {
         };
       });
     }
-
-    // if (defaultPositions[0] === "bottom") {
-    //   // default view
-    //   setMargin((prev) => {
-    //     return {
-    //       topleft: { marginRight: "-100px" },
-    //       topright: { marginLeft: "-39px" },
-    //       bottomleft: { marginLeft: "0px" },
-    //       bottomright: { marginLeft: "0px" },
-    //       topList: {},
-    //       bottomList: {},
-    //       leftList: { marginRight: "0px" },
-    //       rightList: { marginRight: "39px" },
-    //     };
-    //   });
-    //  }
   }, [defaultPositions]);
 
   const getLength = (pos) => getQuadrant(pos)?.quadrantListItems.length || 0;
@@ -677,22 +614,24 @@ const TriangleBox = () => {
         editFlag: false,
         isOwnerAdding: false,
         rowText: "",
+        action: "",
         rowObj: null,
         popoverTitle: "",
       };
     });
   };
 
-  const editButtonClickHandler = (event, item) => {
+  const actionButtonClickHandler = (event, item, action) => {
     setAddNewAnchorEl(event.currentTarget);
     setEditDeleteTempVars((prev) => {
       return {
         ...prev,
-        editFlag: true,
+        editFlag: action === "edit",
+        action: action,
         isOwnerAdding: item.rowType === "quandrantOwner",
         rowText: item.rowName,
         rowObj: item,
-        popoverTitle: "Edit Row Item",
+        popoverTitle: `${action === "delete" ? "Delete" : "Edit"} Row Item`,
       };
     });
   };
@@ -700,7 +639,7 @@ const TriangleBox = () => {
   const showPlotMapperPopover = (e, obj) => {
     setAnchorEl(e.currentTarget);
     const partsOfMap = obj.split("~~X~~");
-    const allQItems = QUADRANTS_CONSTANT.quadrants?.map((x) => {
+    const allQItems = data.quadrants?.map((x) => {
       return x?.quadrantListItems;
     });
 
@@ -758,9 +697,89 @@ const TriangleBox = () => {
       }
     });
     if (a) {
-      return MAPPING[a["type"]].icon ?? "";
+      return MAPPING[a["type"]]?.icon ?? "";
     } else {
       return "";
+    }
+  };
+
+  const handleSaveOfNewRow = () => {
+    const { rowText, isOwnerAdding, editFlag, popoverTitle, rowObj, action } =
+      editDeleteTempVars;
+
+    // In case of delete action
+    if (action === "delete" && rowObj?.rowId) {
+      setData((prev) => {
+        const updatedQuads = prev?.quadrants?.map((quad) => {
+          return {
+            ...quad,
+            quadrantListItems: quad.quadrantListItems.filter(
+              (item) => item.rowId !== rowObj.rowId
+            ),
+          };
+        });
+        return { quadrants: updatedQuads };
+      });
+
+      closeAddPopover();
+      return;
+    }
+
+    // For add/edit logic
+    const newRowObj = {
+      rowName: rowText,
+      rowId: editFlag ? rowObj?.rowId : crypto.randomUUID(),
+      rowType: isOwnerAdding ? "quandrantOwner" : "quandrantRow",
+    };
+
+    setData((prev) => {
+      const updatedQuads = prev?.quadrants?.map((quad) => {
+        // Only update the bottom quadrant
+        if (quad.quadrantPosition !== "bottom") return quad;
+        let updatedRowItems;
+
+        if (editFlag && rowObj) {
+          // Edit mode: update rowName of the matching row
+          updatedRowItems = quad.quadrantListItems.map((item) =>
+            item.rowId === rowObj?.rowId ? { ...item, rowName: rowText } : item
+          );
+        } else {
+          // Add mode: insert new row via your existing helper
+          updatedRowItems = latestRowItems(quad, newRowObj, isOwnerAdding);
+        }
+
+        return {
+          ...quad,
+          quadrantListItems: updatedRowItems,
+        };
+      });
+
+      return { quadrants: updatedQuads };
+    });
+
+    closeAddPopover();
+  };
+
+  const latestRowItems = (quad, newRowObj, isOwnerAdding) => {
+    if (quad.quadrantPosition !== "bottom") {
+      return quad.quadrantListItems;
+    }
+    if (quad.basePosition === "top" || quad.basePosition === "left") {
+      return [...quad.quadrantListItems, newRowObj];
+    }
+    if (quad.basePosition === "right" && isOwnerAdding) {
+      let arr = quad.quadrantListItems;
+      return [
+        ...arr.slice(0, quad?.quadrantListItems?.length),
+        newRowObj,
+        // ...arr.slice(quad?.quadrantListItems?.length - 1),
+      ];
+    }
+    if (quad.basePosition === "right" && !isOwnerAdding) {
+      return [newRowObj, ...quad.quadrantListItems];
+    }
+    if (quad.basePosition === "bottom") {
+      return [...quad.quadrantListItems, newRowObj];
     }
   };
 
@@ -868,7 +887,7 @@ const TriangleBox = () => {
                 i={i}
                 position="bottom"
                 key={i}
-                editIconHanlder={editButtonClickHandler}
+                actionIconHanlder={actionButtonClickHandler}
               />
             ))}
             <Box
@@ -878,19 +897,82 @@ const TriangleBox = () => {
                 justifyContent: "center",
                 width: "100%",
                 minHeight: 30,
+                cursor: "pointer",
               }}
             >
-              <AddBoxIcon
+              <Box
                 sx={{
-                  fontSize: 13,
-                  cursor: "pointer",
-                  pr: "2px",
-                  color: "#1976d2",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
-              <Typography variant="caption" sx={{ color: "#000" }}>
-                Add New
-              </Typography>
+                onClick={(e) => {
+                  setAddNewAnchorEl(e.currentTarget);
+                  setEditDeleteTempVars((prev) => {
+                    return {
+                      ...prev,
+                      editFlag: false,
+                      action: "new",
+                      isOwnerAdding: false,
+                      rowText: "",
+                      rowObj: null,
+                      popoverTitle: `Add Row Item`,
+                    };
+                  });
+                }}
+              >
+                <AddBoxIcon
+                  sx={{
+                    fontSize: 13,
+                    cursor: "pointer",
+                    pr: "2px",
+                    color: "#1976d2",
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: "#000" }}>
+                  Add New
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onClick={(e) => {
+                  setAddNewAnchorEl(e.currentTarget);
+                  setEditDeleteTempVars((prev) => {
+                    return {
+                      ...prev,
+                      editFlag: false,
+                      action: "new",
+                      isOwnerAdding: true,
+                      rowText: "",
+                      rowObj: null,
+                      popoverTitle: `Add Owner`,
+                    };
+                  });
+                }}
+              >
+                {getQuadrant("bottom").quadrantListItems?.filter(
+                  (x) => x.rowType === "quandrantOwner"
+                )?.length > 1 && (
+                  <>
+                    <AddBoxIcon
+                      sx={{
+                        fontSize: 13,
+                        ml: 1,
+                        cursor: "pointer",
+                        pr: "2px",
+                        color: "#1976d2",
+                      }}
+                    />
+                    <Typography variant="caption" sx={{ color: "#000" }}>
+                      Add New Owner
+                    </Typography>
+                  </>
+                )}
+              </Box>
             </Box>
           </Box>
 
@@ -1189,6 +1271,7 @@ const TriangleBox = () => {
               justifyContent: "space-between",
               alignItems: "center",
               minHeight: 25,
+              mb: 0.5,
               minWidth: 300,
             }}
           >
@@ -1202,6 +1285,7 @@ const TriangleBox = () => {
           </Box>
           <TextField
             size="small"
+            fullWidth
             placeholder="Enter here..."
             variant="outlined"
             sx={{
@@ -1210,6 +1294,7 @@ const TriangleBox = () => {
                 fontSize: "13px",
               },
             }}
+            disabled={editDeleteTempVars?.action === "delete"}
             value={editDeleteTempVars?.rowText}
             autoFocus
             onChange={(e) =>
@@ -1222,12 +1307,40 @@ const TriangleBox = () => {
             }
           />
 
-          <Button
-            sx={{ ml: 1, textTransform: "capitalize" }}
-            variant="contained"
-          >
-            Save
-          </Button>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
+            {editDeleteTempVars?.action === "delete" && (
+              <Button
+                size="small"
+                fullWidth
+                onClick={handleSaveOfNewRow}
+                sx={{ textTransform: "capitalize" }}
+                variant="contained"
+              >
+                Delete
+              </Button>
+            )}
+            {editDeleteTempVars?.action !== "delete" && (
+              <Button
+                size="small"
+                fullWidth
+                onClick={handleSaveOfNewRow}
+                sx={{ textTransform: "capitalize" }}
+                variant="contained"
+              >
+                Save
+              </Button>
+            )}
+            <Button
+              size="small"
+              fullWidth
+              color="error"
+              onClick={closeAddPopover}
+              sx={{ ml: 1, textTransform: "capitalize" }}
+              variant="contained"
+            >
+              Cancel
+            </Button>
+          </Box>
         </Box>
       </Popover>
     </>
