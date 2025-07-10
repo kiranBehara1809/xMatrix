@@ -20,6 +20,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import CloseIcon from "@mui/icons-material/Close";
+import Pill from "./Pill";
 
 const VerticalDivider = () => (
   <div
@@ -789,6 +790,8 @@ const TriangleBox = () => {
 
   return (
     <>
+      {/* <Pill label="Notification sent!" showDuration={2000} /> */}
+
       <UserDetails />
       <ProjectHeader />
       <QuadrantButtons emitSelectedRotation={rotateEntire} show={true} />
