@@ -158,7 +158,7 @@ const LegendComponent = () => {
 };
 
 const BASE_COLOR_MAPPING = {
-  "#00e676": "Annual Objectives",
+  "#01c666": "Annual Objectives",
   "#ff1744": "Long-Term Objectives",
   "#ff9100": "Metrics to Improve",
   "#2979ff": "Top Level Improvements",
@@ -227,13 +227,14 @@ const QuadrantListItem = ({
         justifyContent: "space-between",
         width: "100%",
         borderBottom: "0.5px dotted #000",
+        minHeight: 29,
         "&:hover": {
           width: position === "bottom" && item.rowName !== "" ? "85%" : "100%",
           transform:
             position === "bottom" && item.rowName !== ""
               ? "scale(1.15)"
               : "scale(1)",
-          transition: "transform 1s ease",
+          transition: "transform 1.5s ease",
         },
       }}
     >
@@ -475,7 +476,7 @@ const TriangleBox = () => {
         }));
       });
       setHideLists(() => false);
-    }, 700);
+    }, 1500);
   }, [data]);
 
   const getQuadrant = (pos) =>
@@ -807,406 +808,407 @@ const TriangleBox = () => {
           alignItems: "center",
         }}
       >
-        <Collapse in={!hideLists}>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateAreas: `
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateAreas: `
             "top-left top top-right"
             "left center right"
             "bottom-left bottom bottom-right"
           `,
-              gridTemplateColumns: "auto 200px auto",
-              gridTemplateRows: "auto 200px auto",
-              justifyItems: "center",
+            gridTemplateColumns: "auto 200px auto",
+            gridTemplateRows: "auto 200px auto",
+            justifyItems: "center",
+            alignItems: "center",
+            padding: 2,
+          }}
+        >
+          {/* Render each side dynamically */}
+          {/* Top - vertical */}
+          <Box
+            gridArea="top"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
               alignItems: "center",
-              padding: 2,
+              height: `${getLength("top") * cellSize}px`,
+              width: "200px",
+              opacity: !hideLists ? 1 : 0,
+              transform: !hideLists ? "scale(1)" : "scale(0.95)",
+              pointerEvents: !hideLists ? "auto" : "none",
+              transition: "opacity 1.5s ease, transform 1.5s ease",
+              background: "lightgray",
+              //   ...margins.topright,
+              boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
           >
-            {/* Render each side dynamically */}
-            {/* Top - vertical */}
-            <Box
-              gridArea="top"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                height: `${getLength("top") * cellSize}px`,
-                width: "200px",
-                opacity: !hideLists ? 1 : 0,
-                transform: !hideLists ? "scale(1)" : "scale(0.95)",
-                pointerEvents: !hideLists ? "auto" : "none",
-                transition: "opacity 1s ease, transform 1s ease",
-                background: "lightgray",
-                //   ...margins.topright,
-                boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-              }}
-            >
-              {getQuadrant("top").quadrantListItems.map((item, i) => (
-                <QuadrantListItem item={item} i={i} position="top" key={i} />
-              ))}
-            </Box>
+            {getQuadrant("top").quadrantListItems.map((item, i) => (
+              <QuadrantListItem item={item} i={i} position="top" key={i} />
+            ))}
+          </Box>
 
-            {/* Right - horizontal */}
-            <Box
-              gridArea="right"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                height: `${getLength("right") * cellSize}px`,
-                width: "200px",
-                transform: "rotate(-90deg)",
-                background: "lightgray",
-                opacity: !hideLists ? 1 : 0,
-                pointerEvents: !hideLists ? "auto" : "none",
-                transition: "opacity 2s ease, transform 2s ease",
-                ...margins.rightList,
-                boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-              }}
-            >
-              {getQuadrant("right").quadrantListItems.map((item, i) => (
-                <QuadrantListItem item={item} i={i} position="right" key={i} />
-              ))}
-            </Box>
+          {/* Right - horizontal */}
+          <Box
+            gridArea="right"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              height: `${getLength("right") * cellSize}px`,
+              width: "200px",
+              transform: "rotate(-90deg)",
+              background: "lightgray",
+              opacity: !hideLists ? 1 : 0,
+              pointerEvents: !hideLists ? "auto" : "none",
+              transition: "opacity 2s ease, transform 2s ease",
+              ...margins.rightList,
+              boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+            }}
+          >
+            {getQuadrant("right").quadrantListItems.map((item, i) => (
+              <QuadrantListItem item={item} i={i} position="right" key={i} />
+            ))}
+          </Box>
 
-            {/* Bottom - vertical */}
+          {/* Bottom - vertical */}
+          <Box
+            gridArea="bottom"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              height: `${getLength("bottom") * cellSize + 30}px`,
+              width: "200px",
+              opacity: !hideLists ? 1 : 0,
+              transform: !hideLists ? "scale(1)" : "scale(0.95)",
+              pointerEvents: !hideLists ? "auto" : "none",
+              transition: "opacity 2s ease, transform 2s ease",
+              boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+            }}
+          >
+            {getQuadrant("bottom").quadrantListItems.map((item, i) => (
+              <QuadrantListItem
+                item={item}
+                i={i}
+                position="bottom"
+                key={i}
+                actionIconHanlder={actionButtonClickHandler}
+              />
+            ))}
             <Box
-              gridArea="bottom"
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
                 alignItems: "center",
-                height: `${getLength("bottom") * cellSize + 30}px`,
-                width: "200px",
-                opacity: !hideLists ? 1 : 0,
-                transform: !hideLists ? "scale(1)" : "scale(0.95)",
-                pointerEvents: !hideLists ? "auto" : "none",
-                transition: "opacity 2s ease, transform 2s ease",
-                boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                justifyContent: "center",
+                width: "100%",
+                minHeight: 30,
+                cursor: "pointer",
               }}
             >
-              {getQuadrant("bottom").quadrantListItems.map((item, i) => (
-                <QuadrantListItem
-                  item={item}
-                  i={i}
-                  position="bottom"
-                  key={i}
-                  actionIconHanlder={actionButtonClickHandler}
-                />
-              ))}
               <Box
                 sx={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: "100%",
-                  minHeight: 30,
-                  cursor: "pointer",
+                }}
+                onClick={(e) => {
+                  const userName = localStorage.getItem("userName");
+                  if (userName === "reader") {
+                    return;
+                  }
+                  setAddNewAnchorEl(e.currentTarget);
+                  setEditDeleteTempVars((prev) => {
+                    return {
+                      ...prev,
+                      editFlag: false,
+                      action: "new",
+                      isOwnerAdding: false,
+                      rowText: "",
+                      rowObj: null,
+                      popoverTitle: `Add Row Item`,
+                    };
+                  });
                 }}
               >
-                <Box
+                <AddBoxIcon
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    fontSize: 13,
+                    cursor: "pointer",
+                    pr: "2px",
+                    color: "#1976d2",
                   }}
-                  onClick={(e) => {
-                    const userName = localStorage.getItem("userName");
-                    if (userName === "reader") {
-                      return;
-                    }
-                    setAddNewAnchorEl(e.currentTarget);
-                    setEditDeleteTempVars((prev) => {
-                      return {
-                        ...prev,
-                        editFlag: false,
-                        action: "new",
-                        isOwnerAdding: false,
-                        rowText: "",
-                        rowObj: null,
-                        popoverTitle: `Add Row Item`,
-                      };
-                    });
-                  }}
-                >
-                  <AddBoxIcon
-                    sx={{
-                      fontSize: 13,
-                      cursor: "pointer",
-                      pr: "2px",
-                      color: "#1976d2",
-                    }}
-                  />
-                  <Typography variant="caption" sx={{ color: "#000" }}>
-                    Add New
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  onClick={(e) => {
-                    setAddNewAnchorEl(e.currentTarget);
-                    setEditDeleteTempVars((prev) => {
-                      return {
-                        ...prev,
-                        editFlag: false,
-                        action: "new",
-                        isOwnerAdding: true,
-                        rowText: "",
-                        rowObj: null,
-                        popoverTitle: `Add Owner`,
-                      };
-                    });
-                  }}
-                >
-                  {getQuadrant("bottom").quadrantListItems?.filter(
-                    (x) => x.rowType === "quandrantOwner"
-                  )?.length > 1 && (
-                    <>
-                      <AddBoxIcon
-                        sx={{
-                          fontSize: 13,
-                          ml: 1,
-                          cursor: "pointer",
-                          pr: "2px",
-                          color: "#1976d2",
-                        }}
-                      />
-                      <Typography variant="caption" sx={{ color: "#000" }}>
-                        Add New Owner
-                      </Typography>
-                    </>
-                  )}
-                </Box>
+                />
+                <Typography variant="caption" sx={{ color: "#000" }}>
+                  Add New
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onClick={(e) => {
+                  setAddNewAnchorEl(e.currentTarget);
+                  setEditDeleteTempVars((prev) => {
+                    return {
+                      ...prev,
+                      editFlag: false,
+                      action: "new",
+                      isOwnerAdding: true,
+                      rowText: "",
+                      rowObj: null,
+                      popoverTitle: `Add Owner`,
+                    };
+                  });
+                }}
+              >
+                {getQuadrant("bottom").quadrantListItems?.filter(
+                  (x) => x.rowType === "quandrantOwner"
+                )?.length > 1 && (
+                  <>
+                    <AddBoxIcon
+                      sx={{
+                        fontSize: 13,
+                        ml: 1,
+                        cursor: "pointer",
+                        pr: "2px",
+                        color: "#1976d2",
+                      }}
+                    />
+                    <Typography variant="caption" sx={{ color: "#000" }}>
+                      Add New Owner
+                    </Typography>
+                  </>
+                )}
               </Box>
             </Box>
+          </Box>
 
-            {/* Left - horizontal */}
-            <Box
-              gridArea="left"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                height: `${getLength("left") * cellSize}px`,
-                width: "200px",
-                transform: "rotate(-90deg)",
-                background: "lightGray",
-                opacity: !hideLists ? 1 : 0,
-                pointerEvents: !hideLists ? "auto" : "none",
-                transition: "opacity 2s ease, transform 2s ease",
-                ...margins.leftList,
-              }}
-            >
-              {getQuadrant("left").quadrantListItems.map((item, i) => (
-                <QuadrantListItem item={item} i={i} position="left" key={i} />
-              ))}
-            </Box>
+          {/* Left - horizontal */}
+          <Box
+            gridArea="left"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              height: `${getLength("left") * cellSize}px`,
+              width: "200px",
+              transform: "rotate(-90deg)",
+              background: "lightGray",
+              opacity: !hideLists ? 1 : 0,
+              pointerEvents: !hideLists ? "auto" : "none",
+              transition: "opacity 2s ease, transform 2s ease",
+              ...margins.leftList,
+            }}
+          >
+            {getQuadrant("left").quadrantListItems.map((item, i) => (
+              <QuadrantListItem item={item} i={i} position="left" key={i} />
+            ))}
+          </Box>
 
-            {/* Center square with triangles - dynamic colors */}
-            <Box
-              gridArea="center"
-              sx={{
-                width: 200,
-                height: 200,
-                position: "relative",
-              }}
-            >
-              {data.quadrants.map((q, i) => {
-                // Define clip paths for top, right, bottom, left
-                const clipPaths = [
-                  "polygon(0% 0%, 100% 0%, 50% 50%)", // top
-                  "polygon(100% 0%, 100% 100%, 50% 50%)", // right
-                  "polygon(100% 100%, 0% 100%, 50% 50%)", // bottom
-                  "polygon(0% 100%, 0% 0%, 50% 50%)", // left
-                ];
+          {/* Center square with triangles - dynamic colors */}
+          <Box
+            gridArea="center"
+            sx={{
+              width: 200,
+              height: 200,
+              position: "relative",
+              transformStyle: "preserve-3d",
+              willChange: "transform",
+            }}
+          >
+            {data.quadrants.map((q, i) => {
+              // Define clip paths for top, right, bottom, left
+              const clipPaths = [
+                "polygon(0% 0%, 100% 0%, 50% 50%)", // top
+                "polygon(100% 0%, 100% 100%, 50% 50%)", // right
+                "polygon(100% 100%, 0% 100%, 50% 50%)", // bottom
+                "polygon(0% 100%, 0% 0%, 50% 50%)", // left
+              ];
 
-                // Approximate text positions for each triangle
-                const textPositions = [
-                  { top: "1%", left: "50%", transform: "translateX(-50%)" }, // top center
-                  { top: "50%", right: "1%", transform: "translateY(-50%)" }, // right center
-                  { bottom: "1%", left: "50%", transform: "translateX(-50%)" }, // bottom center
-                  { top: "50%", left: "1%", transform: "translateY(-50%)" }, // left center
-                ];
+              // Approximate text positions for each triangle
+              const textPositions = [
+                { top: "1%", left: "50%", transform: "translateX(-50%)" }, // top center
+                { top: "50%", right: "1%", transform: "translateY(-50%)" }, // right center
+                { bottom: "1%", left: "50%", transform: "translateX(-50%)" }, // bottom center
+                { top: "50%", left: "1%", transform: "translateY(-50%)" }, // left center
+              ];
 
-                const index = defaultPositions.indexOf(q.quadrantPosition);
+              const index = defaultPositions.indexOf(q.quadrantPosition);
 
-                return (
+              return (
+                <Box
+                  key={q.quadrantName}
+                  sx={{
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    clipPath: clipPaths[index],
+                    backgroundColor: alpha(q.quadrantColor, 0.1),
+                    transform: !hideLists ? "rotate(0deg)" : "rotate(180deg)",
+                    transition: !hideLists ? "transform 0.3s linear" : "none",
+                    // willChange: !hideLists
+                    //   ? "transform, clip-path"
+                    //   : "clip-path",
+                    backfaceVisibility: "hidden",
+                  }}
+                >
                   <Box
-                    key={q.quadrantName}
                     sx={{
                       position: "absolute",
-                      width: "100%",
-                      height: "100%",
-                      clipPath: clipPaths[index],
-                      backgroundColor: alpha(q.quadrantColor, 0.6),
-                      transform: !hideLists ? "rotate(0deg)" : "rotate(180deg)",
-                      transition: "transform 0.5s linear",
+                      color: "#fff",
+                      pointerEvents: "none",
+                      maxWidth: "70px",
+                      fontWeight: "500",
+                      // backgroundColor: "rgba(255, 255, 255, 0.7)",
+                      backgroundColor: alpha(q.quadrantColor, 1),
+                      backdropFilter: "blur(20px)",
+                      padding: "2px 5px",
+                      textAlign: "center",
+                      fontSize: "10px",
+                      borderRadius: "8px",
+                      opacity: !hideLists ? 1 : 0,
+                      transition: !hideLists ? "opacity 2s linear" : "none",
+                      ...textPositions[index],
                     }}
                   >
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        color: "#000",
-                        pointerEvents: "none",
-                        maxWidth: "70px",
-                        fontWeight: "500",
-                        backgroundColor: "rgba(255, 255, 255, 0.7)",
-                        backdropFilter: "blur(20px)",
-                        padding: "2px 5px",
-                        textAlign: "center",
-                        fontSize: "10px",
-                        borderRadius: "8px",
-                        opacity: !hideLists ? 1 : 0,
-                        transition: "opacity 2s ease",
-                        ...textPositions[index],
-                      }}
-                    >
-                      {BASE_COLOR_MAPPING[q.quadrantColor]}
-                    </Box>
+                    {BASE_COLOR_MAPPING[q.quadrantColor]}
                   </Box>
-                );
-              })}
-            </Box>
-            {/* Grids for corners */}
-
-            {/* Top-Right Grid */}
-            {/* {showQuadrants?.topRight && ( */}
-            {/* TOP-LEFT QUADRANT */}
-            <Box
-              gridArea="top-left"
-              sx={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
-                gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
-                width: `${getLength("left") * cellSize}px`,
-                height: `${getLength("top") * cellSize}px`,
-                border: "none !important",
-                ...margins.topleft,
-                opacity: showQuadrants.topLeft ? 1 : 0,
-                transform: showQuadrants.topLeft ? "scale(1)" : "scale(0.95)",
-                pointerEvents: showQuadrants.topLeft ? "auto" : "none",
-                transition: "opacity 2s ease-out, transform 2s ease-out",
-                "& > div": gridCell,
-              }}
-            >
-              {noOfBoxes("top", "left").map((val, i) => (
-                <Box
-                  key={i}
-                  title={val}
-                  sx={{ border: "0.5px dashed gray !important" }}
-                  onClick={(e) => showPlotMapperPopover(e, val)}
-                >
-                  {getNewIntersections("top", "left", val)}
                 </Box>
-              ))}
-            </Box>
-
-            {/* TOP-RIGHT QUADRANT */}
-            <Box
-              gridArea="top-right"
-              sx={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
-                gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
-                width: `${getLength("right") * cellSize}px`,
-                height: `${getLength("top") * cellSize}px`,
-                border: "none !important",
-                ...margins.rightList,
-                opacity: showQuadrants.topRight ? 1 : 0,
-                transform: showQuadrants.topRight ? "scale(1)" : "scale(0.95)",
-                pointerEvents: showQuadrants.topRight ? "auto" : "none",
-                transition: "opacity 2s ease-out, transform 2s ease-out",
-                "& > div": gridCell,
-              }}
-            >
-              {noOfBoxes("top", "right").map((val, i) => (
-                <Box
-                  key={i}
-                  title={val}
-                  sx={{ border: "0.5px dashed gray !important" }}
-                  onClick={(e) => showPlotMapperPopover(e, val)}
-                >
-                  {getNewIntersections("top", "right", val)}
-                </Box>
-              ))}
-            </Box>
-
-            {/* BOTTOM-LEFT QUADRANT */}
-            <Box
-              gridArea="bottom-left"
-              sx={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
-                gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
-                width: `${getLength("left") * cellSize}px`,
-                height: `${getLength("bottom") * cellSize}px`,
-                border: "none !important",
-                mt: "-30px",
-                ...margins.bottomleft,
-                opacity: showQuadrants.bottomLeft ? 1 : 0,
-                transform: showQuadrants.bottomLeft
-                  ? "scale(1)"
-                  : "scale(0.95)",
-                pointerEvents: showQuadrants.bottomLeft ? "auto" : "none",
-                transition: "opacity 2s ease-out, transform 2s ease-out",
-                "& > div": gridCell,
-              }}
-            >
-              {noOfBoxes("left", "bottom").map((val, i) => (
-                <Box
-                  key={i}
-                  title={val}
-                  sx={{ border: "0.5px dashed gray !important" }}
-                  onClick={(e) => showPlotMapperPopover(e, val)}
-                >
-                  {getNewIntersections("bottom", "left", val)}
-                </Box>
-              ))}
-            </Box>
-
-            {/* BOTTOM-RIGHT QUADRANT */}
-            <Box
-              gridArea="bottom-right"
-              sx={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
-                gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
-                width: `${getLength("right") * cellSize}px`,
-                height: `${getLength("bottom") * cellSize}px`,
-                border: "none !important",
-                mt: "-30px",
-                ...margins.topright, // consider renaming if reused here
-                opacity: showQuadrants.bottomRight ? 1 : 0,
-                transform: showQuadrants.bottomRight
-                  ? "scale(1)"
-                  : "scale(0.95)",
-                pointerEvents: showQuadrants.bottomRight ? "auto" : "none",
-                transition: "opacity 2s ease-out, transform 2s ease-out",
-                "& > div": gridCell,
-              }}
-            >
-              {noOfBoxes("bottom", "right").map((val, i) => (
-                <Box
-                  key={i}
-                  title={val}
-                  sx={{ border: "0.5px dashed gray !important" }}
-                  onClick={(e) => showPlotMapperPopover(e, val)}
-                >
-                  {getNewIntersections("bottom", "right", val)}
-                </Box>
-              ))}
-            </Box>
+              );
+            })}
           </Box>
-        </Collapse>
+          {/* Grids for corners */}
+
+          {/* Top-Right Grid */}
+          {/* {showQuadrants?.topRight && ( */}
+          {/* TOP-LEFT QUADRANT */}
+          <Box
+            gridArea="top-left"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
+              gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
+              width: `${getLength("left") * cellSize}px`,
+              height: `${getLength("top") * cellSize}px`,
+              border: "none !important",
+              ...margins.topleft,
+              opacity: showQuadrants.topLeft ? 1 : 0,
+              transform: showQuadrants.topLeft ? "scale(1)" : "scale(0.95)",
+              pointerEvents: showQuadrants.topLeft ? "auto" : "none",
+              transition: "opacity 2s ease-out, transform 2s ease-out",
+              "& > div": gridCell,
+            }}
+          >
+            {noOfBoxes("top", "left").map((val, i) => (
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+                onClick={(e) => showPlotMapperPopover(e, val)}
+              >
+                {getNewIntersections("top", "left", val)}
+              </Box>
+            ))}
+          </Box>
+
+          {/* TOP-RIGHT QUADRANT */}
+          <Box
+            gridArea="top-right"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
+              gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
+              width: `${getLength("right") * cellSize}px`,
+              height: `${getLength("top") * cellSize}px`,
+              border: "none !important",
+              ...margins.rightList,
+              opacity: showQuadrants.topRight ? 1 : 0,
+              transform: showQuadrants.topRight ? "scale(1)" : "scale(0.95)",
+              pointerEvents: showQuadrants.topRight ? "auto" : "none",
+              transition: "opacity 2s ease-out, transform 2s ease-out",
+              "& > div": gridCell,
+            }}
+          >
+            {noOfBoxes("top", "right").map((val, i) => (
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+                onClick={(e) => showPlotMapperPopover(e, val)}
+              >
+                {getNewIntersections("top", "right", val)}
+              </Box>
+            ))}
+          </Box>
+
+          {/* BOTTOM-LEFT QUADRANT */}
+          <Box
+            gridArea="bottom-left"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
+              gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
+              width: `${getLength("left") * cellSize}px`,
+              height: `${getLength("bottom") * cellSize}px`,
+              border: "none !important",
+              mt: "-30px",
+              ...margins.bottomleft,
+              opacity: showQuadrants.bottomLeft ? 1 : 0,
+              transform: showQuadrants.bottomLeft ? "scale(1)" : "scale(0.95)",
+              pointerEvents: showQuadrants.bottomLeft ? "auto" : "none",
+              transition: "opacity 2s ease-out, transform 2s ease-out",
+              "& > div": gridCell,
+            }}
+          >
+            {noOfBoxes("left", "bottom").map((val, i) => (
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+                onClick={(e) => showPlotMapperPopover(e, val)}
+              >
+                {getNewIntersections("bottom", "left", val)}
+              </Box>
+            ))}
+          </Box>
+
+          {/* BOTTOM-RIGHT QUADRANT */}
+          <Box
+            gridArea="bottom-right"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
+              gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
+              width: `${getLength("right") * cellSize}px`,
+              height: `${getLength("bottom") * cellSize}px`,
+              border: "none !important",
+              mt: "-30px",
+              ...margins.topright, // consider renaming if reused here
+              opacity: showQuadrants.bottomRight ? 1 : 0,
+              transform: showQuadrants.bottomRight ? "scale(1)" : "scale(0.95)",
+              pointerEvents: showQuadrants.bottomRight ? "auto" : "none",
+              transition: "opacity 2s ease-out, transform 2s ease-out",
+              "& > div": gridCell,
+            }}
+          >
+            {noOfBoxes("bottom", "right").map((val, i) => (
+              <Box
+                key={i}
+                title={val}
+                sx={{ border: "0.5px dashed gray !important" }}
+                onClick={(e) => showPlotMapperPopover(e, val)}
+              >
+                {getNewIntersections("bottom", "right", val)}
+              </Box>
+            ))}
+          </Box>
+        </Box>
       </Box>
       <Popover
         open={Boolean(anchorEl)}

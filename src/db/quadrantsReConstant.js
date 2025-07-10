@@ -172,7 +172,7 @@ const QUADRANTS_CONSTANT = {
     },
     {
       quadrantName: "Annual Objectives",
-      quadrantColor: "#00e676",
+      quadrantColor: "#01c666",
       qRefColor: "lightGreen",
       quadrantPosition: "left",
       basePosition: "left",
