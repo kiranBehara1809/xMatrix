@@ -20,106 +20,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import CloseIcon from "@mui/icons-material/Close";
-import Pill from "./Pill";
-
-const VerticalDivider = () => (
-  <div
-    style={{
-      width: "1px",
-      backgroundColor: "#000",
-      height: "100%",
-      margin: "0 20px",
-    }}
-  />
-);
-
-const UserDetails = () => {
-  const userName = localStorage.getItem("userName");
-  return (
-    <Box
-      sx={{
-        position: "absolute",
-        top: "10px",
-        right: "10px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "auto",
-        height: "30px",
-        borderRadius: "8px",
-        padding: "8px 12px",
-        boxShadow:
-          "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
-      }}
-    >
-      <Avatar
-        sx={{ width: 25, height: 25, backgroundColor: "#1976d2" }}
-        variant="rounded"
-      >
-        {userName?.split("")[0].toUpperCase()}
-      </Avatar>
-      <Typography
-        sx={{
-          marginLeft: "8px",
-          fontSize: "14px",
-          color: "#000",
-          fontWeight: "bold",
-        }}
-      >
-        {userName
-          ?.toLowerCase()
-          .split(" ")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ")}
-      </Typography>
-      <VerticalDivider />
-      <Typography
-        sx={{
-          fontSize: "14px",
-          color: "#000",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
-        onClick={() => {
-          localStorage.removeItem("userName");
-          window.location.href = "/login";
-        }}
-      >
-        Logout
-      </Typography>
-    </Box>
-  );
-};
-
-const ProjectHeader = () => {
-  return (
-    <>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          fontSize: "24px",
-          fontWeight: "bold",
-          color: "#000",
-          padding: "10px 16px",
-          borderRadius: "8px",
-          boxShadow:
-            "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
-        }}
-      >
-        X-Matrix
-      </Box>
-    </>
-  );
-};
 
 const LegendComponent = () => {
   return (
     <Box
       sx={{
         position: "absolute",
-        bottom: "10px",
+        bottom: "40px",
         left: "10px",
         boxShadow:
           "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
@@ -225,30 +132,42 @@ const QuadrantListItem = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        width: "100%",
+        width: position === "bottom" ? 189 : 200,
         borderBottom: "0.5px dotted #000",
         minHeight: 29,
         "&:hover": {
-          width: position === "bottom" && item.rowName !== "" ? "85%" : "100%",
+          // width: position === "bottom" && item.rowName !== "" ? 189 : 200,
           transform:
             position === "bottom" && item.rowName !== ""
-              ? "scale(1.15)"
+              ? "scale(1.07)"
               : "scale(1)",
-          transition: "transform 1.5s ease",
+          transition: "transform 0.5s ease",
         },
       }}
     >
       <Tooltip
         title={isTextOverflowing(i, position) ? item.rowName : ""}
         arrow
-        placement="left-start"
+        placement={position === "bottom" ? "left" : "right"}
+        slotProps={{
+          popper: {
+            modifiers: [
+              {
+                name: "offset",
+                options: {
+                  offset: [0, position === "bottom" ? 10 : 0], // [horizontal, vertical] offset
+                },
+              },
+            ],
+          },
+        }}
       >
         <Typography
           id={`${i}+${position}`}
           ref={textRef}
           variant="caption"
           sx={{
-            color: item.rowType === "quandrantRow" ? "#000" : "#a72c4b",
+            color: item.rowType === "quandrantRow" ? "#000" : "#1565c0",
             width: "100%",
             minHeight: 30,
             fontSize: "11px",
@@ -303,6 +222,7 @@ const TriangleBox = () => {
   ]);
   const [hideLists, setHideLists] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [slotMapperList, setSlotMapperList] = useState(Object.values(MAPPING));
   const [addNewAnchorEl, setAddNewAnchorEl] = useState(null);
   const [tempVars, setTempVars] = useState({
     selectedRow: null,
@@ -657,6 +577,18 @@ const TriangleBox = () => {
       }
       if (!column) column = qaItem?.find((x) => x.rowId === partsOfMap[1]);
     });
+    if (
+      row?.rowType === "quandrantOwner" ||
+      column?.rowType === "quandrantOwner"
+    ) {
+      setSlotMapperList((prev) => {
+        return Object.values(MAPPING).filter((x) => x.value !== "RL");
+      });
+    } else {
+      setSlotMapperList((prev) => {
+        return Object.values(MAPPING).filter((x) => x.value === "RL");
+      });
+    }
     setTempVars((prev) => ({
       ...prev,
       selectedRow: row,
@@ -793,8 +725,6 @@ const TriangleBox = () => {
     <>
       {/* <Pill label="Notification sent!" showDuration={2000} /> */}
 
-      <UserDetails />
-      <ProjectHeader />
       <QuadrantButtons emitSelectedRotation={rotateEntire} show={true} />
       <LegendComponent />
 
@@ -802,7 +732,7 @@ const TriangleBox = () => {
         sx={{
           height: "100dvh",
           width: "100dvw",
-          overflow: "hidden",
+          overflow: "auto",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -864,6 +794,7 @@ const TriangleBox = () => {
               pointerEvents: !hideLists ? "auto" : "none",
               transition: "opacity 2s ease, transform 2s ease",
               ...margins.rightList,
+              borderTop: "0.5px dotted #000",
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
           >
@@ -887,6 +818,7 @@ const TriangleBox = () => {
               pointerEvents: !hideLists ? "auto" : "none",
               transition: "opacity 2s ease, transform 2s ease",
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+              borderTop: "0.5px dotted #000",
             }}
           >
             {getQuadrant("bottom").quadrantListItems.map((item, i) => (
@@ -1108,7 +1040,7 @@ const TriangleBox = () => {
             {noOfBoxes("top", "left").map((val, i) => (
               <Box
                 key={i}
-                title={val}
+                // title={val}
                 sx={{ border: "0.5px dashed gray !important" }}
                 onClick={(e) => showPlotMapperPopover(e, val)}
               >
@@ -1138,7 +1070,7 @@ const TriangleBox = () => {
             {noOfBoxes("top", "right").map((val, i) => (
               <Box
                 key={i}
-                title={val}
+                // title={val}
                 sx={{ border: "0.5px dashed gray !important" }}
                 onClick={(e) => showPlotMapperPopover(e, val)}
               >
@@ -1169,7 +1101,7 @@ const TriangleBox = () => {
             {noOfBoxes("left", "bottom").map((val, i) => (
               <Box
                 key={i}
-                title={val}
+                // title={val}
                 sx={{ border: "0.5px dashed gray !important" }}
                 onClick={(e) => showPlotMapperPopover(e, val)}
               >
@@ -1200,7 +1132,7 @@ const TriangleBox = () => {
             {noOfBoxes("bottom", "right").map((val, i) => (
               <Box
                 key={i}
-                title={val}
+                // title={val}
                 sx={{ border: "0.5px dashed gray !important" }}
                 onClick={(e) => showPlotMapperPopover(e, val)}
               >
@@ -1219,9 +1151,9 @@ const TriangleBox = () => {
           horizontal: "left",
         }}
       >
-        {Object.entries(MAPPING).map(([key, value]) => (
+        {slotMapperList.map((value, index) => (
           <Box
-            key={key}
+            key={index}
             sx={{
               display: "flex",
               justifyContent: "flex-start",
@@ -1315,6 +1247,9 @@ const TriangleBox = () => {
                 fontSize: "13px",
               },
             }}
+            multiline
+            minRows={2}
+            maxRows={3}
             disabled={editDeleteTempVars?.action === "delete"}
             value={editDeleteTempVars?.rowText}
             autoFocus

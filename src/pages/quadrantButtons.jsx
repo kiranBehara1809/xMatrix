@@ -71,7 +71,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
     gap: "20px",
     padding: "20px",
     position: "absolute",
-    bottom: "10px",
+    bottom: "40px",
     right: "10px",
     borderRadius: "12px",
     boxShadow:
@@ -105,7 +105,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
             width: "120px",
           }}
         >
-          Change orientation
+          Change Orientation
         </span>
         <Box
           sx={{

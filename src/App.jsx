@@ -30,6 +30,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Login from "./pages/Login";
 import QuadrantsWithAniAnIntersections from "./pages/quadrantsWithAniAnIntersections";
 import TriangleBox from "./pages/ReworkOfQuadrants";
+import Layout from "./pages/Layout";
 
 function App() {
   return (
@@ -37,7 +38,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<TriangleBox />} />
+        <Route path="/home" element={<Layout />} />
+        <Route path="/newHome" element={<TriangleBox />} />
       </Routes>
     </Router>
   );
