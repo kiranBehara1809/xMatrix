@@ -981,7 +981,7 @@ const TriangleBox = () => {
                     width: "100%",
                     height: "100%",
                     clipPath: clipPaths[index],
-                    backgroundColor: alpha(q.quadrantColor, 0.1),
+                    backgroundColor: alpha(q.quadrantColor, 0.6),
                     transform: !hideLists ? "rotate(0deg)" : "rotate(180deg)",
                     transition: !hideLists ? "transform 0.3s linear" : "none",
                     // willChange: !hideLists
@@ -993,12 +993,11 @@ const TriangleBox = () => {
                   <Box
                     sx={{
                       position: "absolute",
-                      color: "#fff",
+                      color: "#000",
                       pointerEvents: "none",
                       maxWidth: "70px",
                       fontWeight: "500",
-                      // backgroundColor: "rgba(255, 255, 255, 0.7)",
-                      backgroundColor: alpha(q.quadrantColor, 1),
+                      backgroundColor: "rgba(255, 255, 255, 0.7)",
                       backdropFilter: "blur(20px)",
                       padding: "2px 5px",
                       textAlign: "center",

@@ -21,12 +21,12 @@ const Footer = () => {
         variant="dense"
         sx={{
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "flex-end",
           alignItems: "flex-start",
         }}
       >
         <Typography variant="caption" color="inherit" sx={{ pt: 0.5 }}>
-          © {new Date().getFullYear()} Powered by X-Matrix
+          © to X-Matrix {new Date().getFullYear()}, powered by X-Matrix
         </Typography>
       </Toolbar>
     </AppBar>
