@@ -48,17 +48,17 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
 
   return (
     <>
-      <div style={{ ...containerStyle, bottom: "180px" }}>
+      <div style={{ ...containerStyle, bottom: "170px" }}>
         <span
           style={{
             fontSize: "13px",
             color: "#000",
             whiteSpace: "break-spaces",
-            width: "120px",
+            width: "130px",
             textAlign: "center",
           }}
         >
-          Zoom ({currentZoom}x){" "}
+          <strong>Zoom</strong> ({currentZoom}x){" "}
           <Link sx={{ cursor: "pointer" }} onClick={() => zoom("in", true)}>
             Reset
           </Link>
@@ -99,10 +99,10 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
             fontSize: "13px",
             color: "#000",
             whiteSpace: "break-spaces",
-            width: "120px",
+            width: "130px",
           }}
         >
-          Change Orientation
+          <strong>Change Orientation</strong>
         </span>
         <Box
           sx={{

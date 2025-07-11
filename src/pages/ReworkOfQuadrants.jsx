@@ -43,7 +43,7 @@ const LegendComponent = () => {
           color: "#000",
         }}
       >
-        Keys
+        <strong>Keys</strong>
       </span>
       {Object.entries(MAPPING)?.map(([key, value], index) => (
         <Box
