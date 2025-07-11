@@ -37,6 +37,30 @@ const theme = createTheme({
         },
       },
     },
+
+    // ✅ Button overrides
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          boxShadow: "none", // Remove elevation shadow
+          outline: "none", // Remove outline
+          "&:hover": {
+            boxShadow: "none", // Prevent hover shadow
+            outline: "none",
+            border: "none",
+          },
+          "&:focus": {
+            boxShadow: "none",
+            outline: "none",
+          },
+        },
+      },
+      defaultProps: {
+        disableElevation: true, // Disable elevation by default
+        disableRipple: false, // Optional: disable ripple
+        disableFocusRipple: true, // Disable focus ripple
+      },
+    },
   },
 });
 

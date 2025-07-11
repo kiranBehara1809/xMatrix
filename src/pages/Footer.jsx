@@ -26,7 +26,8 @@ const Footer = () => {
         }}
       >
         <Typography variant="caption" color="inherit" sx={{ pt: 0.5 }}>
-          © to X-Matrix {new Date().getFullYear()}, powered by X-Matrix
+          {new Date().getFullYear()} - {new Date().getFullYear() + 1} | © to &
+          Powered by <strong>X-Matrix</strong>
         </Typography>
       </Toolbar>
     </AppBar>

@@ -20,6 +20,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import CloseIcon from "@mui/icons-material/Close";
+import { useDispatch, useSelector } from "react-redux";
+import { setGlobalData } from "../redux/globalDataSlice";
 
 const LegendComponent = () => {
   return (
@@ -211,9 +213,12 @@ const QuadrantListItem = ({
 };
 
 const TriangleBox = () => {
-  const [data, setData] = useState(
-    JSON.parse(JSON.stringify(QUADRANTS_CONSTANT))
-  );
+  const [data, setData] = useState([]);
+  const globalData = useSelector((state) => state.globalData.data);
+  useEffect(() => {
+    setData(globalData);
+  }, [globalData]);
+  const dispatch = useDispatch();
   const [defaultPositions, setDefaultPositions] = useState([
     "top",
     "right",
@@ -344,6 +349,10 @@ const TriangleBox = () => {
   }, []);
 
   useEffect(() => {
+    dispatch(setGlobalData(JSON.parse(JSON.stringify(QUADRANTS_CONSTANT))));
+  }, []);
+
+  useEffect(() => {
     const blueQuadrant = data?.quadrants?.find((x) => x.basePosition === "top");
     if (!blueQuadrant) return;
     // Step 1: Hide all immediately
@@ -387,6 +396,7 @@ const TriangleBox = () => {
     }
 
     // Step 2: Show one by one based on targetState
+    dispatch(setGlobalData(data));
     setTimeout(() => {
       const keys = Object.keys(targetState);
       keys.forEach((key, index) => {
@@ -400,7 +410,7 @@ const TriangleBox = () => {
   }, [data]);
 
   const getQuadrant = (pos) =>
-    data.quadrants.find((q) => q.quadrantPosition === pos);
+    globalData?.quadrants?.find((q) => q.quadrantPosition === pos);
 
   const rotateEntire = ({ index, buttonClick }) => {
     setHideLists(() => true);
@@ -773,7 +783,7 @@ const TriangleBox = () => {
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
           >
-            {getQuadrant("top").quadrantListItems.map((item, i) => (
+            {getQuadrant("top")?.quadrantListItems.map((item, i) => (
               <QuadrantListItem item={item} i={i} position="top" key={i} />
             ))}
           </Box>
@@ -798,7 +808,7 @@ const TriangleBox = () => {
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
           >
-            {getQuadrant("right").quadrantListItems.map((item, i) => (
+            {getQuadrant("right")?.quadrantListItems.map((item, i) => (
               <QuadrantListItem item={item} i={i} position="right" key={i} />
             ))}
           </Box>
@@ -821,7 +831,7 @@ const TriangleBox = () => {
               borderTop: "0.5px dotted #000",
             }}
           >
-            {getQuadrant("bottom").quadrantListItems.map((item, i) => (
+            {getQuadrant("bottom")?.quadrantListItems.map((item, i) => (
               <QuadrantListItem
                 item={item}
                 i={i}
@@ -898,7 +908,7 @@ const TriangleBox = () => {
                   });
                 }}
               >
-                {getQuadrant("bottom").quadrantListItems?.filter(
+                {getQuadrant("bottom")?.quadrantListItems?.filter(
                   (x) => x.rowType === "quandrantOwner"
                 )?.length > 1 && (
                   <>
@@ -938,7 +948,7 @@ const TriangleBox = () => {
               ...margins.leftList,
             }}
           >
-            {getQuadrant("left").quadrantListItems.map((item, i) => (
+            {getQuadrant("left")?.quadrantListItems.map((item, i) => (
               <QuadrantListItem item={item} i={i} position="left" key={i} />
             ))}
           </Box>
@@ -954,7 +964,7 @@ const TriangleBox = () => {
               willChange: "transform",
             }}
           >
-            {data.quadrants.map((q, i) => {
+            {data?.quadrants?.map((q, i) => {
               // Define clip paths for top, right, bottom, left
               const clipPaths = [
                 "polygon(0% 0%, 100% 0%, 50% 50%)", // top
@@ -1040,7 +1050,10 @@ const TriangleBox = () => {
               <Box
                 key={i}
                 // title={val}
-                sx={{ border: "0.5px dashed gray !important" }}
+                sx={{
+                  border: "0.5px dashed gray !important",
+                  cursor: "pointer",
+                }}
                 onClick={(e) => showPlotMapperPopover(e, val)}
               >
                 {getNewIntersections("top", "left", val)}
@@ -1070,7 +1083,10 @@ const TriangleBox = () => {
               <Box
                 key={i}
                 // title={val}
-                sx={{ border: "0.5px dashed gray !important" }}
+                sx={{
+                  border: "0.5px dashed gray !important",
+                  cursor: "pointer",
+                }}
                 onClick={(e) => showPlotMapperPopover(e, val)}
               >
                 {getNewIntersections("top", "right", val)}
@@ -1101,7 +1117,10 @@ const TriangleBox = () => {
               <Box
                 key={i}
                 // title={val}
-                sx={{ border: "0.5px dashed gray !important" }}
+                sx={{
+                  border: "0.5px dashed gray !important",
+                  cursor: "pointer",
+                }}
                 onClick={(e) => showPlotMapperPopover(e, val)}
               >
                 {getNewIntersections("bottom", "left", val)}
@@ -1132,7 +1151,10 @@ const TriangleBox = () => {
               <Box
                 key={i}
                 // title={val}
-                sx={{ border: "0.5px dashed gray !important" }}
+                sx={{
+                  border: "0.5px dashed gray !important",
+                  cursor: "pointer",
+                }}
                 onClick={(e) => showPlotMapperPopover(e, val)}
               >
                 {getNewIntersections("bottom", "right", val)}
