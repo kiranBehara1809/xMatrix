@@ -9,6 +9,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  ListSubheader,
   Popover,
   TextField,
   Typography,
@@ -39,6 +40,7 @@ const SlidePanel = () => {
     action: null,
     isOwnerAdding: false,
     popoverTitle: "",
+    openModal: false,
   });
 
   useEffect(() => {
@@ -63,7 +65,7 @@ const SlidePanel = () => {
   const togglePanel = () => setIsOpen((prev) => !prev);
 
   const closeAddPopover = () => {
-    setAddNewAnchorEl(null);
+    // setAddNewAnchorEl(null);
     setEditDeleteTempVars((prev) => {
       return {
         ...prev,
@@ -73,8 +75,32 @@ const SlidePanel = () => {
         action: "",
         rowObj: null,
         popoverTitle: "",
+        openModal: false,
       };
     });
+  };
+
+  const checkZoomLevelAndIncreasePopover = () => {
+    const el = document.getElementById("centralsquare");
+    if (!el) {
+      return 1;
+    }
+    const computedStyle = window.getComputedStyle(el);
+    const transform = computedStyle.transform;
+
+    if (transform && transform !== "none") {
+      const match = transform.match(/matrix\(([^)]+)\)/);
+      if (match) {
+        const values = match[1].split(", ");
+        const scaleX = parseFloat(values[0]);
+        const scaleY = parseFloat(values[3]);
+        return scaleX;
+      } else {
+        return 1;
+      }
+    } else {
+      return 1;
+    }
   };
 
   const handleButtonClick = (value) => {
@@ -190,7 +216,7 @@ const SlidePanel = () => {
     if (userName === "reader") {
       return;
     }
-    setAddNewAnchorEl(event.currentTarget);
+    // setAddNewAnchorEl(event.currentTarget);
     let actionLabel = action === "delete" ? "Delete" : "Edit";
     if (action === "add") {
       actionLabel = "Add";
@@ -210,6 +236,7 @@ const SlidePanel = () => {
         rowText: action === "add" ? "" : item?.rowName,
         rowObj: item ?? null,
         popoverTitle: popoverTitle,
+        openModal: true,
       };
     });
   };
@@ -294,16 +321,103 @@ const SlidePanel = () => {
             open={true}
             title={localData?.quadrantName}
             maxWidth={"md"}
+            sx={{ transform: `scale(${checkZoomLevelAndIncreasePopover()})` }}
           >
             <Box
               sx={{
-                height: "300px",
+                height: "auto",
+                maxHeight: "450px",
                 overflowY: "auto",
                 overflowX: "hidden",
                 p: "4px 8px",
               }}
             >
               <List dense={false}>
+                {["quandrantRow", "quandrantOwner"].map((type) => {
+                  const filteredItems = localData?.quadrantListItems?.filter(
+                    (item) => item.rowType === type
+                  );
+                  if (!filteredItems?.length) return null;
+
+                  return (
+                    <React.Fragment key={type}>
+                      <ListSubheader
+                        sx={{
+                          bgcolor: "#1876d2",
+                          mb: 2,
+                          fontSize: "14px",
+                          color: "#fff",
+                          borderRadius: 2,
+                        }}
+                      >
+                        {type === "quandrantOwner" ? "Owner" : "Items"}
+                      </ListSubheader>
+                      {filteredItems.map((x) => (
+                        <ListItem
+                          key={x.rowId}
+                          sx={{
+                            boxShadow:
+                              "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
+                            mb: 1,
+                            borderRadius: 4,
+                            minHeight: 31,
+                            height: 40,
+                          }}
+                          secondaryAction={
+                            <>
+                              <IconButton
+                                disabled={x.rowName === ""}
+                                edge="end"
+                                aria-label="edit"
+                                onClick={(e) => {
+                                  actionButtonClickHandler(e, x, "edit");
+                                }}
+                              >
+                                <Edit
+                                  sx={{
+                                    color:
+                                      x.rowName === "" ? "gray" : "#1976d2",
+                                    cursor:
+                                      x.rowName === ""
+                                        ? "not-allowed"
+                                        : "pointer",
+                                  }}
+                                />
+                              </IconButton>
+
+                              <IconButton
+                                disabled={x.rowName === ""}
+                                edge="end"
+                                aria-label="delete"
+                                onClick={(e) => {
+                                  actionButtonClickHandler(e, x, "delete");
+                                }}
+                              >
+                                <Delete
+                                  sx={{
+                                    color: x.rowName === "" ? "gray" : "red",
+                                    cursor:
+                                      x.rowName === ""
+                                        ? "not-allowed"
+                                        : "pointer",
+                                  }}
+                                />
+                              </IconButton>
+                            </>
+                          }
+                        >
+                          <ListItemText
+                            primary={x.rowName}
+                            slotProps={{ primary: { fontSize: "13px", mr: 2 } }}
+                          />
+                        </ListItem>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
+              </List>
+
+              {/* <List dense={false}>
                 {localData?.quadrantListItems?.map((x) => {
                   return (
                     <ListItem
@@ -361,7 +475,7 @@ const SlidePanel = () => {
                     </ListItem>
                   );
                 })}
-              </List>
+              </List> */}
             </Box>
             <Box
               sx={{
@@ -393,14 +507,6 @@ const SlidePanel = () => {
                   Add New Owner
                 </Button>
               )}
-
-              {/* <Button
-                variant="contained"
-                size="small"
-                sx={{ textTransform: "capitalize" }}
-              >
-                Submit
-              </Button> */}
               <Button
                 variant="contained"
                 size="small"
@@ -424,6 +530,88 @@ const SlidePanel = () => {
         </>
       )}
 
+      {editDeleteTempVars?.openModal && (
+        <CustomDialog
+          open={true}
+          title={editDeleteTempVars?.popoverTitle}
+          maxWidth={"xs"}
+          sx={{ transform: `scale(${checkZoomLevelAndIncreasePopover()})` }}
+        >
+          <Box sx={{ pl: 1, pr: 1, pb: 1 }}>
+            {editDeleteTempVars?.action === "clearAll" && (
+              <Typography variant="body2">
+                Are you sure, you want to clear all records?
+              </Typography>
+            )}
+            {editDeleteTempVars?.action !== "clearAll" && (
+              <TextField
+                size="small"
+                fullWidth
+                placeholder="Enter here..."
+                variant="outlined"
+                sx={{
+                  minWidth: "300px",
+                  "& .MuiInputBase-input": {
+                    fontSize: "13px",
+                  },
+                }}
+                multiline
+                minRows={2}
+                maxRows={3}
+                disabled={editDeleteTempVars?.action === "delete"}
+                value={editDeleteTempVars?.rowText}
+                autoFocus
+                onChange={(e) =>
+                  setEditDeleteTempVars((prev) => {
+                    return {
+                      ...prev,
+                      rowText: e.target.value,
+                    };
+                  })
+                }
+              />
+            )}
+
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
+            >
+              {editDeleteTempVars?.action === "delete" && (
+                <Button
+                  size="small"
+                  fullWidth
+                  onClick={cudRowHandler}
+                  sx={{ textTransform: "capitalize" }}
+                  variant="contained"
+                >
+                  Delete
+                </Button>
+              )}
+              {editDeleteTempVars?.action !== "delete" && (
+                <Button
+                  size="small"
+                  fullWidth
+                  onClick={cudRowHandler}
+                  sx={{ textTransform: "capitalize" }}
+                  variant="contained"
+                >
+                  Save
+                </Button>
+              )}
+              <Button
+                size="small"
+                fullWidth
+                color="error"
+                onClick={closeAddPopover}
+                sx={{ ml: 1, textTransform: "capitalize" }}
+                variant="contained"
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Box>
+        </CustomDialog>
+      )}
+
       <Popover
         open={Boolean(addNewAnchorEl)}
         anchorEl={addNewAnchorEl}
@@ -433,96 +621,7 @@ const SlidePanel = () => {
           horizontal: "left",
         }}
         sx={{ zIndex: 100000000001 }}
-      >
-        <Box sx={{ p: 1 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              minHeight: 25,
-              mb: 0.5,
-              minWidth: 300,
-            }}
-          >
-            <Typography variant="body2">
-              {editDeleteTempVars?.popoverTitle}
-            </Typography>
-            <CloseIcon
-              style={{ fontSize: 13, cursor: "pointer" }}
-              onClick={closeAddPopover}
-            />
-          </Box>
-          {editDeleteTempVars?.action === "clearAll" && (
-            <Typography variant="body2">
-              Are you sure, you want to clear all records?
-            </Typography>
-          )}
-          {editDeleteTempVars?.action !== "clearAll" && (
-            <TextField
-              size="small"
-              fullWidth
-              placeholder="Enter here..."
-              variant="outlined"
-              sx={{
-                minWidth: "300px",
-                "& .MuiInputBase-input": {
-                  fontSize: "13px",
-                },
-              }}
-              multiline
-              minRows={2}
-              maxRows={3}
-              disabled={editDeleteTempVars?.action === "delete"}
-              value={editDeleteTempVars?.rowText}
-              autoFocus
-              onChange={(e) =>
-                setEditDeleteTempVars((prev) => {
-                  return {
-                    ...prev,
-                    rowText: e.target.value,
-                  };
-                })
-              }
-            />
-          )}
-
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-            {editDeleteTempVars?.action === "delete" && (
-              <Button
-                size="small"
-                fullWidth
-                onClick={cudRowHandler}
-                sx={{ textTransform: "capitalize" }}
-                variant="contained"
-              >
-                Delete
-              </Button>
-            )}
-            {editDeleteTempVars?.action !== "delete" && (
-              <Button
-                size="small"
-                fullWidth
-                onClick={cudRowHandler}
-                sx={{ textTransform: "capitalize" }}
-                variant="contained"
-              >
-                Save
-              </Button>
-            )}
-            <Button
-              size="small"
-              fullWidth
-              color="error"
-              onClick={closeAddPopover}
-              sx={{ ml: 1, textTransform: "capitalize" }}
-              variant="contained"
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Popover>
+      ></Popover>
     </>
   );
 };

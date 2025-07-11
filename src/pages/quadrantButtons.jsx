@@ -24,7 +24,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
 
   const ZOOM_STEP = 0.05;
   const MAX_ZOOM = 1.5;
-  const MIN_ZOOM = 0.7;
+  const MIN_ZOOM = 1;
 
   const zoom = (direction = "out", resetFlag = false) => {
     const el = document.getElementById("centralsquare");

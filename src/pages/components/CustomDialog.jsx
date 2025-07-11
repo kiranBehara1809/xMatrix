@@ -18,13 +18,10 @@ const CustomDialog = ({
   children,
   title = "Custom Dialog",
   maxWidth = "lg",
+  sx = {}
 }) => {
   const handleClose = () => {
     onClose(selectedValue);
-  };
-
-  const handleListItemClick = (value) => {
-    onClose(value);
   };
 
   return (
@@ -43,10 +40,14 @@ const CustomDialog = ({
       fullWidth
       onClose={handleClose}
       open={open}
-      sx={{ zIndex: 10000000001 }}
+      sx={{ zIndex: 10000000001, ...sx }}
       maxWidth={maxWidth}
     >
-      <DialogTitle sx={{ textAlign: "center" }}>{title}</DialogTitle>
+      <DialogTitle
+        sx={{ textAlign: "center", lineHeight: "0.6", maxHeight: "20px" }}
+      >
+        {title}
+      </DialogTitle>
       {children}
     </Dialog>
   );

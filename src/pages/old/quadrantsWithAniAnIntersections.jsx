@@ -18,7 +18,7 @@ import CircleIcon from "@mui/icons-material/Circle";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
-import QuadrantButtonsOld from "./quadButtonOld";
+import QuadrantButtonsOld from "./old/quadButtonOld";
 import CreateIcon from "@mui/icons-material/Create";
 
 const VerticalDivider = () => (

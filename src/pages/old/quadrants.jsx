@@ -1,6 +1,6 @@
 import React from "react";
 import { alpha, Box, Divider, Typography } from "@mui/material";
-import { QUADRANTS } from "../db/quadrants";
+import { QUADRANTS } from "../../db/quadrants";
 
 const triangleStyle = {
   position: "absolute",

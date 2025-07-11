@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { keyframes } from "@emotion/react";
-import { QUADRANTS } from "../db/quadrants";
+import { QUADRANTS } from "../../db/quadrants";
 
 // 🔄 Rotation animations
 const rotateAnimation = keyframes`
