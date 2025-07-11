@@ -22,6 +22,7 @@ import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import CloseIcon from "@mui/icons-material/Close";
 import { useDispatch, useSelector } from "react-redux";
 import { setGlobalData } from "../redux/globalDataSlice";
+import CustomDialog from "./components/CustomDialog";
 
 const LegendComponent = () => {
   return (
@@ -570,6 +571,29 @@ const TriangleBox = () => {
         popoverTitle: `${action === "delete" ? "Delete" : "Edit"} Row Item`,
       };
     });
+  };
+
+  const checkZoomLevelAndIncreasePopover = () => {
+    const el = document.getElementById("centralsquare");
+    if (!el) {
+      return 1;
+    }
+    const computedStyle = window.getComputedStyle(el);
+    const transform = computedStyle.transform;
+
+    if (transform && transform !== "none") {
+      const match = transform.match(/matrix\(([^)]+)\)/);
+      if (match) {
+        const values = match[1].split(", ");
+        const scaleX = parseFloat(values[0]);
+        const scaleY = parseFloat(values[3]);
+        return scaleX;
+      } else {
+        return 1;
+      }
+    } else {
+      return 1;
+    }
   };
 
   const showPlotMapperPopover = (e, obj) => {
@@ -1235,97 +1259,80 @@ const TriangleBox = () => {
         </Box>
       </Popover>
 
-      <Popover
-        open={Boolean(addNewAnchorEl)}
-        anchorEl={addNewAnchorEl}
-        onClose={() => closeAddPopover()}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-      >
-        <Box sx={{ p: 1 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              minHeight: 25,
-              mb: 0.5,
-              minWidth: 300,
-            }}
-          >
-            <Typography variant="body2">
-              {editDeleteTempVars?.popoverTitle}
-            </Typography>
-            <CloseIcon
-              style={{ fontSize: 13, cursor: "pointer" }}
-              onClick={closeAddPopover}
-            />
-          </Box>
-          <TextField
-            size="small"
-            fullWidth
-            placeholder="Enter here..."
-            variant="outlined"
-            sx={{
-              minWidth: "300px",
-              "& .MuiInputBase-input": {
-                fontSize: "13px",
-              },
-            }}
-            multiline
-            minRows={2}
-            maxRows={3}
-            disabled={editDeleteTempVars?.action === "delete"}
-            value={editDeleteTempVars?.rowText}
-            autoFocus
-            onChange={(e) =>
-              setEditDeleteTempVars((prev) => {
-                return {
-                  ...prev,
-                  rowText: e.target.value,
-                };
-              })
-            }
-          />
-
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-            {editDeleteTempVars?.action === "delete" && (
-              <Button
-                size="small"
-                fullWidth
-                onClick={handleSaveOfNewRow}
-                sx={{ textTransform: "capitalize" }}
-                variant="contained"
-              >
-                Delete
-              </Button>
-            )}
-            {editDeleteTempVars?.action !== "delete" && (
-              <Button
-                size="small"
-                fullWidth
-                onClick={handleSaveOfNewRow}
-                sx={{ textTransform: "capitalize" }}
-                variant="contained"
-              >
-                Save
-              </Button>
-            )}
-            <Button
+      {addNewAnchorEl !== null && (
+        <CustomDialog
+          maxWidth="xs"
+          open={true}
+          title={editDeleteTempVars?.popoverTitle}
+          sx={{ transform: `scale(${checkZoomLevelAndIncreasePopover()})` }}
+        >
+          <Box sx={{ p: 1 }}>
+            <TextField
               size="small"
               fullWidth
-              color="error"
-              onClick={closeAddPopover}
-              sx={{ ml: 1, textTransform: "capitalize" }}
-              variant="contained"
+              placeholder="Enter here..."
+              variant="outlined"
+              sx={{
+                minWidth: "300px",
+                "& .MuiInputBase-input": {
+                  fontSize: "13px",
+                },
+              }}
+              multiline
+              minRows={2}
+              maxRows={3}
+              disabled={editDeleteTempVars?.action === "delete"}
+              value={editDeleteTempVars?.rowText}
+              autoFocus
+              onChange={(e) =>
+                setEditDeleteTempVars((prev) => {
+                  return {
+                    ...prev,
+                    rowText: e.target.value,
+                  };
+                })
+              }
+            />
+
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
             >
-              Cancel
-            </Button>
+              {editDeleteTempVars?.action === "delete" && (
+                <Button
+                  size="small"
+                  fullWidth
+                  onClick={handleSaveOfNewRow}
+                  sx={{ textTransform: "capitalize" }}
+                  variant="contained"
+                >
+                  Delete
+                </Button>
+              )}
+              {editDeleteTempVars?.action !== "delete" && (
+                <Button
+                  size="small"
+                  fullWidth
+                  onClick={handleSaveOfNewRow}
+                  sx={{ textTransform: "capitalize" }}
+                  variant="contained"
+                >
+                  Save
+                </Button>
+              )}
+              <Button
+                size="small"
+                fullWidth
+                color="error"
+                onClick={closeAddPopover}
+                sx={{ ml: 1, textTransform: "capitalize" }}
+                variant="contained"
+              >
+                Cancel
+              </Button>
+            </Box>
           </Box>
-        </Box>
-      </Popover>
+        </CustomDialog>
+      )}
     </>
   );
 };
