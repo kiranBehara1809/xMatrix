@@ -348,9 +348,9 @@ const TriangleBox = () => {
     };
   }, []);
 
-  useEffect(() => {
-    dispatch(setGlobalData(JSON.parse(JSON.stringify(QUADRANTS_CONSTANT))));
-  }, []);
+  // useEffect(() => {
+  //   dispatch(setGlobalData(JSON.parse(JSON.stringify(QUADRANTS_CONSTANT))));
+  // }, []);
 
   useEffect(() => {
     const blueQuadrant = data?.quadrants?.find((x) => x.basePosition === "top");
@@ -740,8 +740,8 @@ const TriangleBox = () => {
 
       <Box
         sx={{
-          height: "100dvh",
-          width: "100dvw",
+          height: "calc(100lvh)",
+          width: "100lvw",
           overflow: "auto",
           display: "flex",
           justifyContent: "center",
@@ -749,6 +749,7 @@ const TriangleBox = () => {
         }}
       >
         <Box
+          id="centralsquare"
           sx={{
             display: "grid",
             gridTemplateAreas: `
@@ -760,7 +761,7 @@ const TriangleBox = () => {
             gridTemplateRows: "auto 200px auto",
             justifyItems: "center",
             alignItems: "center",
-            padding: 2,
+            m: 20,
           }}
         >
           {/* Render each side dynamically */}
@@ -796,21 +797,23 @@ const TriangleBox = () => {
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
-              height: `${getLength("right") * cellSize}px`,
-              width: "200px",
-              transform: "rotate(-90deg)",
+              width: `${getLength("right") * cellSize}px`,
+              height: "200px",
+
               background: "lightgray",
               opacity: !hideLists ? 1 : 0,
               pointerEvents: !hideLists ? "auto" : "none",
               transition: "opacity 2s ease, transform 2s ease",
-              ...margins.rightList,
+              // ...margins.rightList,
               borderTop: "0.5px dotted #000",
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
           >
-            {getQuadrant("right")?.quadrantListItems.map((item, i) => (
-              <QuadrantListItem item={item} i={i} position="right" key={i} />
-            ))}
+            <Box sx={{ transform: "rotate(-90deg)" }}>
+              {getQuadrant("right")?.quadrantListItems.map((item, i) => (
+                <QuadrantListItem item={item} i={i} position="right" key={i} />
+              ))}
+            </Box>
           </Box>
 
           {/* Bottom - vertical */}
@@ -938,19 +941,22 @@ const TriangleBox = () => {
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
-              height: `${getLength("left") * cellSize}px`,
-              width: "200px",
-              transform: "rotate(-90deg)",
+              width: `${getLength("left") * cellSize + 4}px`,
+              height: "200px",
+              position: "relative",
+              right: "-38px",
               background: "lightGray",
               opacity: !hideLists ? 1 : 0,
               pointerEvents: !hideLists ? "auto" : "none",
               transition: "opacity 2s ease, transform 2s ease",
-              ...margins.leftList,
+              // ...margins.leftList,
             }}
           >
-            {getQuadrant("left")?.quadrantListItems.map((item, i) => (
-              <QuadrantListItem item={item} i={i} position="left" key={i} />
-            ))}
+            <Box sx={{ transform: "rotate(-90deg)" }}>
+              {getQuadrant("left")?.quadrantListItems.map((item, i) => (
+                <QuadrantListItem item={item} i={i} position="left" key={i} />
+              ))}
+            </Box>
           </Box>
 
           {/* Center square with triangles - dynamic colors */}
@@ -1071,7 +1077,7 @@ const TriangleBox = () => {
               width: `${getLength("right") * cellSize}px`,
               height: `${getLength("top") * cellSize}px`,
               border: "none !important",
-              ...margins.rightList,
+              // ...margins.rightList,
               opacity: showQuadrants.topRight ? 1 : 0,
               transform: showQuadrants.topRight ? "scale(1)" : "scale(0.95)",
               pointerEvents: showQuadrants.topRight ? "auto" : "none",
@@ -1139,7 +1145,7 @@ const TriangleBox = () => {
               height: `${getLength("bottom") * cellSize}px`,
               border: "none !important",
               mt: "-30px",
-              ...margins.topright, // consider renaming if reused here
+              // ...margins.topright, // consider renaming if reused here
               opacity: showQuadrants.bottomRight ? 1 : 0,
               transform: showQuadrants.bottomRight ? "scale(1)" : "scale(0.95)",
               pointerEvents: showQuadrants.bottomRight ? "auto" : "none",

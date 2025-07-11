@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
 
 const initialState = {
-  data: {},
+  data: JSON.parse(JSON.stringify(QUADRANTS_CONSTANT)),
 };
 
 const globalDataSlice = createSlice({
@@ -12,7 +13,7 @@ const globalDataSlice = createSlice({
       state.data = action.payload;
     },
     resetGlobalData(state) {
-      state.data = {};
+      state.data = JSON.parse(JSON.stringify(QUADRANTS_CONSTANT));
     },
   },
 });
