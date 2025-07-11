@@ -86,67 +86,11 @@ const SlidePanel = () => {
     setLocalData(null);
   };
 
-  const handleSaveOfNewRow = () => {
-    const { rowText, isOwnerAdding, editFlag, popoverTitle, rowObj, action } =
-      editDeleteTempVars;
-
-    // In case of delete action
-    if (action === "delete" && rowObj?.rowId) {
-      setLocalData((prev) => {
-        const updatedQuads = prev?.quadrants?.map((quad) => {
-          return {
-            ...quad,
-            quadrantListItems: quad.quadrantListItems.filter(
-              (item) => item.rowId !== rowObj.rowId
-            ),
-          };
-        });
-        return { quadrants: updatedQuads };
-      });
-
-      closeAddPopover();
-      return;
-    }
-
-    // For add/edit logic
-    const newRowObj = {
-      rowName: rowText,
-      rowId: editFlag ? rowObj?.rowId : crypto.randomUUID(),
-      rowType: isOwnerAdding ? "quandrantOwner" : "quandrantRow",
-    };
-
-    setLocalData((prev) => {
-      const updatedQuads = prev?.quadrants?.map((quad) => {
-        // Only update the bottom quadrant
-        if (quad.quadrantPosition !== "bottom") return quad;
-        let updatedRowItems;
-
-        if (editFlag && rowObj) {
-          // Edit mode: update rowName of the matching row
-          updatedRowItems = quad.quadrantListItems.map((item) =>
-            item.rowId === rowObj?.rowId ? { ...item, rowName: rowText } : item
-          );
-        } else {
-          // Add mode: insert new row via your existing helper
-          updatedRowItems = latestRowItems(quad, newRowObj, isOwnerAdding);
-        }
-
-        return {
-          ...quad,
-          quadrantListItems: updatedRowItems,
-        };
-      });
-
-      return { quadrants: updatedQuads };
-    });
-  };
-
   const cudRowHandler = () => {
-    console.log(localData);
     const { rowText, isOwnerAdding, editFlag, popoverTitle, rowObj, action } =
       editDeleteTempVars;
 
-    if (!rowText) return;
+    if (!rowText && action !== "clearAll") return;
 
     // Deep clone to avoid mutation
     const tempGlobalData = JSON.parse(JSON.stringify(globalData));
@@ -167,6 +111,11 @@ const SlidePanel = () => {
           item.rowName = rowText;
           item.rowType = isOwnerAdding ? "quandrantOwner" : "quandrantRow";
         }
+        break;
+      }
+
+      case "clearAll": {
+        quadrant.quadrantListItems = [];
         break;
       }
 
@@ -247,7 +196,10 @@ const SlidePanel = () => {
       actionLabel = "Add";
     }
     const rowType = ownerBtnClick ? "Owner" : "Item";
-    const popoverTitle = `${actionLabel} Row ${rowType}`;
+    let popoverTitle = `${actionLabel} Row ${rowType}`;
+    if (action === "clearAll") {
+      popoverTitle = "Clear All Rows";
+    }
 
     setEditDeleteTempVars((prev) => {
       return {
@@ -345,7 +297,7 @@ const SlidePanel = () => {
           >
             <Box
               sx={{
-                height: "250px",
+                height: "300px",
                 overflowY: "auto",
                 overflowX: "hidden",
                 p: "4px 8px",
@@ -355,30 +307,47 @@ const SlidePanel = () => {
                 {localData?.quadrantListItems?.map((x) => {
                   return (
                     <ListItem
+                      key={crypto.randomUUID()}
                       sx={{
                         boxShadow:
                           "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
                         mb: 1,
                         borderRadius: 4,
                         minHeight: 31,
+                        height: 40,
                       }}
                       secondaryAction={
                         <>
                           <IconButton
+                            disabled={x.rowName === ""}
                             edge="end"
                             aria-label="edit"
                             onClick={(e) => {
                               actionButtonClickHandler(e, x, "edit");
                             }}
                           >
-                            <Edit sx={{ color: "#1976d2" }} />
+                            <Edit
+                              sx={{
+                                color: x.rowName === "" ? "gray" : "#1976d2",
+                                cursor:
+                                  x.rowName === "" ? "not-allowed" : "pointer",
+                              }}
+                            />
                           </IconButton>
 
-                          <IconButton edge="end" aria-label="delete">
+                          <IconButton
+                            disabled={x.rowName === ""}
+                            edge="end"
+                            aria-label="delete"
+                            onClick={(e) => {
+                              actionButtonClickHandler(e, x, "delete");
+                            }}
+                          >
                             <Delete
-                              sx={{ color: "red" }}
-                              onClick={(e) => {
-                                actionButtonClickHandler(e, x, "delete");
+                              sx={{
+                                color: x.rowName === "" ? "gray" : "red",
+                                cursor:
+                                  x.rowName === "" ? "not-allowed" : "pointer",
                               }}
                             />
                           </IconButton>
@@ -436,6 +405,9 @@ const SlidePanel = () => {
                 variant="contained"
                 size="small"
                 sx={{ textTransform: "capitalize" }}
+                onClick={(e) =>
+                  actionButtonClickHandler(e, null, "clearAll", false)
+                }
               >
                 Clear All
               </Button>
@@ -481,32 +453,39 @@ const SlidePanel = () => {
               onClick={closeAddPopover}
             />
           </Box>
-          <TextField
-            size="small"
-            fullWidth
-            placeholder="Enter here..."
-            variant="outlined"
-            sx={{
-              minWidth: "300px",
-              "& .MuiInputBase-input": {
-                fontSize: "13px",
-              },
-            }}
-            multiline
-            minRows={2}
-            maxRows={3}
-            disabled={editDeleteTempVars?.action === "delete"}
-            value={editDeleteTempVars?.rowText}
-            autoFocus
-            onChange={(e) =>
-              setEditDeleteTempVars((prev) => {
-                return {
-                  ...prev,
-                  rowText: e.target.value,
-                };
-              })
-            }
-          />
+          {editDeleteTempVars?.action === "clearAll" && (
+            <Typography variant="body2">
+              Are you sure, you want to clear all records?
+            </Typography>
+          )}
+          {editDeleteTempVars?.action !== "clearAll" && (
+            <TextField
+              size="small"
+              fullWidth
+              placeholder="Enter here..."
+              variant="outlined"
+              sx={{
+                minWidth: "300px",
+                "& .MuiInputBase-input": {
+                  fontSize: "13px",
+                },
+              }}
+              multiline
+              minRows={2}
+              maxRows={3}
+              disabled={editDeleteTempVars?.action === "delete"}
+              value={editDeleteTempVars?.rowText}
+              autoFocus
+              onChange={(e) =>
+                setEditDeleteTempVars((prev) => {
+                  return {
+                    ...prev,
+                    rowText: e.target.value,
+                  };
+                })
+              }
+            />
+          )}
 
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
             {editDeleteTempVars?.action === "delete" && (
