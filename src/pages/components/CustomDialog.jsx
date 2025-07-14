@@ -10,7 +10,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import PersonIcon from "@mui/icons-material/Person";
 import AddIcon from "@mui/icons-material/Add";
-import { Fade, Typography } from "@mui/material";
+import { Box, Fade, Typography } from "@mui/material";
 
 const CustomDialog = ({
   onClose,
@@ -18,7 +18,8 @@ const CustomDialog = ({
   children,
   title = "Custom Dialog",
   maxWidth = "lg",
-  sx = {}
+  sx = {},
+  icon = null,
 }) => {
   const handleClose = () => {
     onClose(selectedValue);
@@ -43,11 +44,16 @@ const CustomDialog = ({
       sx={{ zIndex: 10000000001, ...sx }}
       maxWidth={maxWidth}
     >
-      <DialogTitle
-        sx={{ textAlign: "center", lineHeight: "0.6", maxHeight: "20px" }}
-      >
-        {title}
-      </DialogTitle>
+      {icon === null && (
+        <DialogTitle
+          sx={{ textAlign: "center", lineHeight: "0.6", maxHeight: "20px" }}
+        >
+          {title}
+        </DialogTitle>
+      )}
+      {icon !== null && (
+        <Box sx={{ display: "flex", justifyContent: "center" }}>{icon}</Box>
+      )}
       {children}
     </Dialog>
   );
