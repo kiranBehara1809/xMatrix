@@ -17,7 +17,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import CustomDialog from "./components/CustomDialog";
 import { useDispatch, useSelector } from "react-redux";
-import { Delete, Edit } from "@mui/icons-material";
+import { Delete, Edit, Warning } from "@mui/icons-material";
 import { setGlobalData } from "../redux/globalDataSlice";
 
 const BASE_COLOR_MAPPING = {
@@ -32,6 +32,8 @@ const SlidePanel = () => {
   const globalData = useSelector((state) => state.globalData.data);
   const [selectedButton, setSelectedButton] = useState(null);
   const [localData, setLocalData] = useState(null);
+  const [somethingEdited, setSomethingEdited] = useState(null);
+  const [showWarning, setShowWarning] = useState(false);
   const [addNewAnchorEl, setAddNewAnchorEl] = useState(null);
   const [editDeleteTempVars, setEditDeleteTempVars] = useState({
     editFlag: false,
@@ -105,14 +107,18 @@ const SlidePanel = () => {
 
   const handleButtonClick = (value) => {
     setSelectedButton(() => value);
+    togglePanel();
   };
 
   const closeHandler = () => {
     setSelectedButton(null);
     setLocalData(null);
+    setSomethingEdited(null);
+    setShowWarning(false);
   };
 
   const cudRowHandler = () => {
+    setSomethingEdited(false);
     const { rowText, isOwnerAdding, editFlag, popoverTitle, rowObj, action } =
       editDeleteTempVars;
 
@@ -178,10 +184,20 @@ const SlidePanel = () => {
     }
 
     // Update global state and close things
-    dispatch(setGlobalData(tempGlobalData));
+    // dispatch(setGlobalData(tempGlobalData));
+    setSomethingEdited(tempGlobalData);
+    setLocalData((prev) =>
+      tempGlobalData?.quadrants?.find((x) => x.quadrantName === selectedButton)
+    );
     closeAddPopover();
+    // closeHandler();
+  };
+
+  const applyAllHandler = () => {
+    if (somethingEdited) {
+      dispatch(setGlobalData(somethingEdited));
+    }
     closeHandler();
-    togglePanel();
   };
 
   const latestRowItems = (quad, newRowObj, isOwnerAdding) => {
@@ -314,6 +330,58 @@ const SlidePanel = () => {
       >
         {isOpen ? <CloseIcon /> : <FilterAltIcon />}
       </Button>
+
+      {showWarning && (
+        <CustomDialog
+          open={true}
+          icon={
+            <Warning
+              sx={{
+                color: "orange",
+                width: "75px",
+                height: "75px",
+                fontSize: "75px",
+              }}
+            />
+          }
+          maxWidth={"xs"}
+          sx={{ transform: `scale(${checkZoomLevelAndIncreasePopover()})` }}
+        >
+          <Box sx={{ p: 1 }}>
+            <Typography>
+              Are you sure, you want cancel all your changes?
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                mt: 1,
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                variant="contained"
+                size="small"
+                sx={{ textTransform: "capitalize" }}
+                onClick={() => {
+                  closeHandler();
+                  setShowWarning(false);
+                }}
+              >
+                Yes
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => setShowWarning(false)}
+                sx={{ textTransform: "capitalize" }}
+              >
+                No
+              </Button>
+            </Box>
+          </Box>
+        </CustomDialog>
+      )}
 
       {selectedButton !== null && (
         <>
@@ -517,11 +585,28 @@ const SlidePanel = () => {
               >
                 Clear All
               </Button>
+              {somethingEdited && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{ textTransform: "capitalize" }}
+                  onClick={applyAllHandler}
+                >
+                  Apply All Changes
+                </Button>
+              )}
+
               <Button
                 variant="contained"
                 size="small"
                 sx={{ textTransform: "capitalize" }}
-                onClick={closeHandler}
+                onClick={() => {
+                  if (somethingEdited) {
+                    setShowWarning(true);
+                  } else {
+                    closeHandler();
+                  }
+                }}
               >
                 Close
               </Button>

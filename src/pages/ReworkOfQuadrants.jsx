@@ -122,12 +122,86 @@ const QuadrantListItem = ({
 }) => {
   const textRef = useRef(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1); // State to track zoom level
+
+  // Function to check if text is overflowing
+  const isTextOverflowing = (element) => {
+    return element?.scrollWidth > element?.clientWidth;
+  };
 
   useEffect(() => {
     if (textRef.current) {
       setShowTooltip(isTextOverflowing(textRef.current));
     }
   }, [item.rowName]);
+
+  // Monitor zoom level changes
+  useEffect(() => {
+    const updateZoomLevel = () => {
+      const el = document.getElementById("centralsquare");
+      if (!el) {
+        setZoomLevel(1);
+        return;
+      }
+      const computedStyle = window.getComputedStyle(el);
+      const transform = computedStyle.transform;
+
+      if (transform && transform !== "none") {
+        const match = transform.match(/matrix\(([^)]+)\)/);
+        if (match) {
+          const values = match[1].split(", ");
+          const scaleX = parseFloat(values[0]);
+          setZoomLevel(scaleX);
+        } else {
+          setZoomLevel(1);
+        }
+      } else {
+        setZoomLevel(1);
+      }
+    };
+
+    // Initial check
+    updateZoomLevel();
+
+    // Optional: Poll for changes if transform updates dynamically
+    const interval = setInterval(updateZoomLevel, 500); // Adjust interval as needed
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
+  const TOOLTIP_FONT_SIZES = useMemo(
+    () => ({
+      1: "12px",
+      1.05: "12px",
+      1.1: "13px",
+      1.15: "13px",
+      1.2: "14px",
+      1.25: "14px",
+      1.3: "16px",
+      1.35: "16px",
+      1.4: "18px",
+      1.45: "18px",
+      1.5: "19px",
+    }),
+    []
+  );
+
+  // Function to get the closest font size based on zoom level
+  const getFontSizeForZoom = (zoom) => {
+    const availableZooms = Object.keys(TOOLTIP_FONT_SIZES)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const closestZoom = availableZooms.reduce((prev, curr) =>
+      Math.abs(curr - zoom) < Math.abs(prev - zoom) ? curr : prev
+    );
+    const fontSize = TOOLTIP_FONT_SIZES[closestZoom] || "12px";
+    console.log(
+      `Zoom Level: ${zoom}, Closest Zoom: ${closestZoom}, Font Size: ${fontSize}`
+    );
+    return fontSize;
+  };
+
+  const tooltipFontSize = getFontSizeForZoom(zoomLevel);
 
   return (
     <Box
@@ -139,7 +213,6 @@ const QuadrantListItem = ({
         borderBottom: "0.5px dotted #000",
         minHeight: 29,
         "&:hover": {
-          // width: position === "bottom" && item.rowName !== "" ? 189 : 200,
           transform:
             position === "bottom" && item.rowName !== ""
               ? "scale(1.07)"
@@ -149,7 +222,7 @@ const QuadrantListItem = ({
       }}
     >
       <Tooltip
-        title={isTextOverflowing(i, position) ? item.rowName : ""}
+        title={showTooltip ? item.rowName : ""}
         arrow
         placement={position === "bottom" ? "left" : "right"}
         slotProps={{
@@ -158,10 +231,17 @@ const QuadrantListItem = ({
               {
                 name: "offset",
                 options: {
-                  offset: [0, position === "bottom" ? 10 : 0], // [horizontal, vertical] offset
+                  offset: [0, position === "bottom" ? 10 : 0],
                 },
               },
             ],
+          },
+          tooltip: {
+            sx: {
+              fontSize: tooltipFontSize,
+              padding: "8px",
+              color: "#fff",
+            },
           },
         }}
       >
@@ -179,7 +259,7 @@ const QuadrantListItem = ({
             lineHeight: 2.66,
             p: "0px 2px",
             textOverflow: "ellipsis",
-            display: "inline-block", // required for ellipsis
+            display: "inline-block",
           }}
         >
           {item.rowName}
@@ -203,7 +283,6 @@ const QuadrantListItem = ({
               fontSize: 13,
               cursor: "pointer",
               pr: "2px",
-
               color: "red",
             }}
           />
