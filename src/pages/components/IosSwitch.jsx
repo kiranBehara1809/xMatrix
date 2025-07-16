@@ -60,7 +60,7 @@
 //   );
 // }
 
-import React from "react";
+import React, { useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -121,11 +121,15 @@ const IOSSwitch = styled((props) => (
   },
 }));
 
-export default function IosSwitchDemo({ label = "" }) {
-  const [checked, setChecked] = React.useState(true);
+export default function IosSwitchDemo({
+  label = "",
+  emitSliderVal = () => {},
+}) {
+  const [checked, setChecked] = React.useState(false);
 
   const handleChange = (event) => {
     setChecked(event.target.checked);
+    emitSliderVal(event?.target?.checked);
   };
 
   return (

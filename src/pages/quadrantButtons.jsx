@@ -11,13 +11,61 @@ import {
 } from "@mui/material";
 import { Redo, Undo, Add, Remove } from "@mui/icons-material";
 import IosSwitchDemo from "./components/IosSwitch";
-import { ALL_CATEGORIES } from "../db/quadrantsReConstant";
+import { ALL_CATEGORIES, QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
+import { useDispatch, useSelector } from "react-redux";
+import { setGlobalData } from "../redux/globalDataSlice";
 
 // Sample Categories (replace with your real ALL_CATEGORIES)
 
-const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
+const QuadrantButtons = ({
+  emitSelectedRotation = () => {},
+  show,
+  rerenderParent = () => {},
+}) => {
+  const globalData = useSelector((state) => state?.globalData?.data);
+  const dispatch = useDispatch();
   const [currentZoom, setCurrentZoom] = useState(1);
   const [selected, setSelected] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const handleCategoryReset = () => {
+    dispatch(setGlobalData(JSON.parse(JSON.stringify(QUADRANTS_CONSTANT))));
+    setSelectedCategory(null);
+    setSelected("");
+  };
+  const filterByCategory = () => {
+    if (selectedCategory === null) {
+      return;
+    }
+    const clonedActualData = JSON.parse(JSON.stringify(QUADRANTS_CONSTANT));
+    const filteredData = clonedActualData?.quadrants?.map((x) => {
+      const updatedItems = x?.quadrantListItems?.filter(
+        (y) => y?.category?.shortName === selectedCategory?.shortName
+      );
+      return {
+        ...x,
+        quadrantListItems: updatedItems,
+      };
+    });
+    dispatch(setGlobalData({ quadrants: filteredData }));
+  };
+
+  const externalEventHandler = (sliderVal) => {
+    const updatedData = globalData?.quadrants?.map((x) => {
+      const udaptedItems = x?.quadrantListItems?.map((y) => {
+        return {
+          ...y,
+          highlightEnabled: sliderVal,
+        };
+      });
+      return {
+        ...x,
+        quadrantListItems: udaptedItems,
+      };
+    });
+    dispatch(setGlobalData({ quadrants: updatedData }));
+    rerenderParent()
+  };
 
   const ZOOM_STEP = 0.05;
   const MAX_ZOOM = 1.5;
@@ -88,7 +136,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
             color: "#000",
           }}
         >
-          <IosSwitchDemo />
+          <IosSwitchDemo emitSliderVal={externalEventHandler} />
         </Box>
       </div>
 
@@ -125,24 +173,32 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
             fullWidth
             sx={{ maxWidth: 180 }}
             value={selected}
-            onChange={(e) => setSelected(e.target.value)}
-            displayEmpty
-            renderValue={(selectedValue) => {
+            onChange={(e) => {
+              const newValue = e.target.value;
+              setSelected(newValue);
               const selectedOption = ALL_CATEGORIES.find(
-                (opt) => opt.shortName === selectedValue
+                (opt) => opt.shortName === newValue
               );
-              return selectedOption ? (
+              setSelectedCategory(selectedOption || null);
+            }}
+            displayEmpty
+            renderValue={(selectedValue) =>
+              selectedValue ? (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <span style={{ fontSize: "12px" }}>
-                    {selectedOption.label}
+                    {
+                      ALL_CATEGORIES.find(
+                        (opt) => opt.shortName === selectedValue
+                      )?.label
+                    }
                   </span>
                 </Box>
               ) : (
                 <span style={{ color: "#888", fontSize: "12px" }}>
                   Category
                 </span>
-              );
-            }}
+              )
+            }
           >
             {ALL_CATEGORIES.map((option) => (
               <MenuItem key={option.shortName} value={option.shortName}>
@@ -173,6 +229,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
               fullWidth
               variant="contained"
               sx={{ textTransform: "capitalize" }}
+              onClick={filterByCategory}
             >
               Apply
             </Button>
@@ -181,6 +238,7 @@ const QuadrantButtons = ({ emitSelectedRotation = () => {}, show }) => {
               fullWidth
               variant="contained"
               sx={{ textTransform: "capitalize" }}
+              onClick={handleCategoryReset}
             >
               Reset
             </Button>
