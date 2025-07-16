@@ -1,20 +1,20 @@
 const CATEGORY_ONE = {
   shortName: "CA",
   label: "Category A",
-  colorCode: "#116129ad",
+  colorCode: "#116129e8",
   refColorCode: "Greenshade",
 };
 const CATEGORY_TWO = {
   shortName: "CB",
   label: "Category B",
-  colorCode: "#1a7faeb3",
+  colorCode: "#045c84e6",
   refColorCode: "teelshade",
 };
 const CATEGORY_THREE = {
   shortName: "CC",
   label: "Category C",
-  colorCode: "#988510c4",
-  refColorCode: "yellowshade",
+  colorCode: "#900527e3",
+  refColorCode: "redshade",
 };
 const CATEGORY_FOUR = {
   shortName: "CD",
@@ -32,11 +32,11 @@ const HIGHLIGHT_COLOR_HIGH_OBJ = {
   priority: "high",
 };
 const HIGHLIGHT_COLOR_MEDIUM_OBJ = {
-  colorCode: "#FFFF00", 
+  colorCode: "#FFFF00",
   priority: "medium",
 };
 const HIGHLIGHT_COLOR_LOW_OBJ = {
-  colorCode: "#008000", 
+  colorCode: "#008000",
   priority: "low",
 };
 
@@ -64,6 +64,7 @@ const QUADRANTS_CONSTANT = {
           sortOrder: "1",
           category: CATEGORY_ONE,
           highlight: HIGHLIGHT_COLOR_OBJ_PURPLE,
+          highlightEnabled: false,
           intersections: [
             { type: "RL", rowId: "b91e9381-5906-470a-a9a5-fc511d93051d" },
             { type: "RL", rowId: "61b0afcc-0530-4c10-8a0d-75fc504e2b7f" },
@@ -146,6 +147,7 @@ const QUADRANTS_CONSTANT = {
           sortOrder: "2",
           category: CATEGORY_THREE,
           highlight: HIGHLIGHT_COLOR_OBJ_PURPLE,
+          highlightEnabled: false,
         },
         {
           rowName: "Yearly growth in assets under Management",
@@ -216,6 +218,7 @@ const QUADRANTS_CONSTANT = {
           rowType: "quandrantRow",
           sortOrder: "2",
           highlight: HIGHLIGHT_COLOR_OBJ_PURPLE,
+          highlightEnabled: false,
           category: CATEGORY_TWO,
         },
         {

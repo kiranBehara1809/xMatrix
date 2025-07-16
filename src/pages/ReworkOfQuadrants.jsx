@@ -11,6 +11,7 @@ import {
   Popover,
   TextField,
 } from "@mui/material";
+import PerplexityFinance from "../assets/PerplexityFinance.png";
 import { QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
 import QuadrantButtons from "./quadrantButtons";
 import CircleIcon from "@mui/icons-material/Circle";
@@ -19,12 +20,13 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
-import { OpenInFull } from "@mui/icons-material";
+import { OpenInFull, PriorityHigh } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { setGlobalData } from "../redux/globalDataSlice";
 import CustomDialog from "./components/CustomDialog";
 import LegendComponent from "./Legend";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 
 const BASE_COLOR_MAPPING = {
   "#01c666": "Annual Objectives",
@@ -78,7 +80,11 @@ const QuadrantListItem = ({
   i,
   position,
   actionIconHanlder = () => {},
+  rowClickHandler = () => {},
 }) => {
+  const dispatch = useDispatch();
+  const globalData = useSelector((state) => state.globalData?.data);
+  const [showHighlightResetModal, setShowHighlightResetModal] = useState(null);
   const textRef = useRef(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1); // State to track zoom level
@@ -86,6 +92,29 @@ const QuadrantListItem = ({
   // Function to check if text is overflowing
   const isTextOverflowing = (element) => {
     return element?.scrollWidth > element?.clientWidth;
+  };
+
+  const handleResetHighlightModal = () => {
+    if (!showHighlightResetModal) {
+      return;
+    }
+    const updatedData = globalData?.quadrants?.map((x) => {
+      const updatedQuadrantListItems = x?.quadrantListItems?.map((y) => {
+        return {
+          ...y,
+          highlight:
+            y.rowId === showHighlightResetModal?.rowId
+              ? null
+              : y?.highlight ?? null,
+        };
+      });
+      return {
+        ...x,
+        quadrantListItems: updatedQuadrantListItems,
+      };
+    });
+    dispatch(setGlobalData({ quadrants: updatedData }));
+    setShowHighlightResetModal(null);
   };
 
   useEffect(() => {
@@ -160,188 +189,261 @@ const QuadrantListItem = ({
   const tooltipFontSize = getFontSizeForZoom(zoomLevel);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: position === "bottom" ? 320 : 320,
-        borderBottom: "0.5px dotted #000",
-        minHeight: 29,
-        position: "relative",
-        overflow: "hidden",
-        ...(item?.highlight !== undefined && {
-          boxShadow: `
+    <>
+      <Box
+        onClick={() => {
+          rowClickHandler(item);
+        }}
+        sx={{
+          cursor:
+            !item?.highlightEnabled ||
+            item?.highlight === undefined ||
+            item?.highlight === null
+              ? "default"
+              : "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: position === "bottom" ? 320 : 320,
+          borderBottom: "0.5px dotted #000",
+          minHeight: 29,
+          position: "relative",
+          overflow: "hidden",
+          ...(!item?.highlightEnabled ||
+          item?.highlight === undefined ||
+          item?.highlight === null
+            ? {}
+            : {
+                boxShadow: `
               inset 0 0 10px ${alpha(item?.highlight?.colorCode, 0.6)}
             `,
-          "&::after": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: 0,
-            height: 0,
-            borderStyle: "solid",
-            borderWidth: "2px",
-            borderColor: "transparent",
-            animation: "travelingBorder 3s linear infinite",
-            pointerEvents: "none",
-            boxSizing: "border-box",
-          },
-          "@keyframes travelingBorder": {
-            "0%": {
-              width: 0,
-              height: 0,
-              borderTopColor: `${item?.highlight?.colorCode}`,
-              borderRightColor: "transparent",
-              borderBottomColor: "transparent",
-              borderLeftColor: "transparent",
-            },
-            "15%": {
-              width: "100%",
-              height: 0,
-              borderTopColor: `${item?.highlight?.colorCode}`,
-              borderRightColor: "transparent",
-              borderBottomColor: "transparent",
-              borderLeftColor: "transparent",
-            },
-            "30%": {
-              width: "100%",
-              height: "100%",
-              borderTopColor: "transparent",
-              borderRightColor: `${item?.highlight?.colorCode}`,
-              borderBottomColor: "transparent",
-              borderLeftColor: "transparent",
-            },
-            "45%": {
-              width: "100%",
-              height: "100%",
-              borderTopColor: "transparent",
-              borderRightColor: `${item?.highlight?.colorCode}`,
-              borderBottomColor: "transparent",
-              borderLeftColor: "transparent",
-            },
-
-            "55%": {
-              width: "99.9999%",
-              height: "100%",
-              borderTopColor: "transparent",
-              borderRightColor: "transparent",
-              borderBottomColor: `${item?.highlight?.colorCode}`,
-              borderLeftColor: "transparent",
-            },
-            "70%": {
-              width: 0,
-              height: "100%",
-              borderTopColor: "transparent",
-              borderRightColor: "transparent",
-              borderBottomColor: `${item?.highlight?.colorCode}`,
-              borderLeftColor: "transparent",
-            },
-
-            "85%": {
-              width: 0,
-              height: 0,
-              borderTopColor: "transparent",
-              borderRightColor: "transparent",
-              borderBottomColor: "transparent",
-              borderLeftColor: `${item?.highlight?.colorCode}`,
-            },
-            "100%": {
-              width: 0,
-              height: 0,
-              borderTopColor: `${item?.highlight?.colorCode}`,
-              borderRightColor: "transparent",
-              borderBottomColor: "transparent",
-              borderLeftColor: "transparent",
-            },
-          },
-        }),
-      }}
-    >
-      {item?.category !== undefined && (
-        <Avatar
-          sx={{
-            width: 24,
-            height: 24,
-            ml: 0.5,
-            mr: 0.5,
-            background: item?.category?.colorCode,
-          }}
-          variant="rounded"
-        >
-          <Typography sx={{ fontSize: "8px" }}>
-            {item?.category?.shortName}
-          </Typography>
-        </Avatar>
-      )}
-      <Tooltip
-        title={showTooltip ? item.rowName : ""}
-        arrow
-        placement={position === "bottom" ? "left" : "right"}
-        slotProps={{
-          popper: {
-            modifiers: [
-              {
-                name: "offset",
-                options: {
-                  offset: [0, position === "bottom" ? 35 : 0],
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: 0,
+                  height: 0,
+                  borderStyle: "solid",
+                  borderWidth: "2px",
+                  borderColor: "transparent",
+                  animation: "travelingBorder 3s linear infinite",
+                  pointerEvents: "none",
+                  boxSizing: "border-box",
                 },
-              },
-            ],
-          },
-          tooltip: {
-            sx: {
-              fontSize: tooltipFontSize,
-              padding: "8px",
-              color: "#fff",
-            },
-          },
+                "@keyframes travelingBorder": {
+                  "0%": {
+                    width: 0,
+                    height: 0,
+                    borderTopColor: `${item?.highlight?.colorCode}`,
+                    borderRightColor: "transparent",
+                    borderBottomColor: "transparent",
+                    borderLeftColor: "transparent",
+                  },
+                  "15%": {
+                    width: "100%",
+                    height: 0,
+                    borderTopColor: `${item?.highlight?.colorCode}`,
+                    borderRightColor: "transparent",
+                    borderBottomColor: "transparent",
+                    borderLeftColor: "transparent",
+                  },
+                  "30%": {
+                    width: "100%",
+                    height: "100%",
+                    borderTopColor: "transparent",
+                    borderRightColor: `${item?.highlight?.colorCode}`,
+                    borderBottomColor: "transparent",
+                    borderLeftColor: "transparent",
+                  },
+                  "45%": {
+                    width: "100%",
+                    height: "100%",
+                    borderTopColor: "transparent",
+                    borderRightColor: `${item?.highlight?.colorCode}`,
+                    borderBottomColor: "transparent",
+                    borderLeftColor: "transparent",
+                  },
+
+                  "55%": {
+                    width: "99.9999%",
+                    height: "100%",
+                    borderTopColor: "transparent",
+                    borderRightColor: "transparent",
+                    borderBottomColor: `${item?.highlight?.colorCode}`,
+                    borderLeftColor: "transparent",
+                  },
+                  "70%": {
+                    width: 0,
+                    height: "100%",
+                    borderTopColor: "transparent",
+                    borderRightColor: "transparent",
+                    borderBottomColor: `${item?.highlight?.colorCode}`,
+                    borderLeftColor: "transparent",
+                  },
+
+                  "85%": {
+                    width: 0,
+                    height: 0,
+                    borderTopColor: "transparent",
+                    borderRightColor: "transparent",
+                    borderBottomColor: "transparent",
+                    borderLeftColor: `${item?.highlight?.colorCode}`,
+                  },
+                  "100%": {
+                    width: 0,
+                    height: 0,
+                    borderTopColor: `${item?.highlight?.colorCode}`,
+                    borderRightColor: "transparent",
+                    borderBottomColor: "transparent",
+                    borderLeftColor: "transparent",
+                  },
+                },
+              }),
         }}
       >
-        <Typography
-          id={`${i}+${position}`}
-          ref={textRef}
-          variant="caption"
-          sx={{
-            color: item.rowType === "quandrantRow" ? "#000" : "#1565c0",
-            width: position === "bottom" && item.rowName !== "" ? 320 : 320,
-            minHeight: 30,
-            fontSize: "11px",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            lineHeight: 2.66,
-            p: "0px 2px",
-            textOverflow: "ellipsis",
-            display: "inline-block",
+        {item?.category !== undefined && (
+          <Avatar
+            sx={{
+              width: 24,
+              height: 24,
+              ml: 0.5,
+              mr: 0.5,
+              background: item?.category?.colorCode,
+            }}
+            variant="rounded"
+          >
+            <Typography sx={{ fontSize: "8px" }}>
+              {item?.category?.shortName}
+            </Typography>
+          </Avatar>
+        )}
+        <Tooltip
+          title={showTooltip ? item.rowName : ""}
+          arrow
+          placement={position === "bottom" ? "left" : "right"}
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: "offset",
+                  options: {
+                    offset: [0, position === "bottom" ? 35 : 0],
+                  },
+                },
+              ],
+            },
+            tooltip: {
+              sx: {
+                fontSize: tooltipFontSize,
+                padding: "8px",
+                color: "#fff",
+              },
+            },
           }}
         >
-          {item.rowName}
-        </Typography>
-      </Tooltip>
-      {position === "bottom" && item.rowName !== "" && (
-        <>
-          <EditIcon
-            onClick={(e) => actionIconHanlder(e, item, "edit")}
+          <Typography
+            id={`${i}+${position}`}
+            ref={textRef}
+            variant="caption"
             sx={{
-              fontSize: 13,
-              cursor: "pointer",
-              pr: "2px",
-              color: "#1976d2",
+              color: item.rowType === "quandrantRow" ? "#000" : "#1565c0",
+              width: position === "bottom" && item.rowName !== "" ? 320 : 320,
+              minHeight: 30,
+              fontSize: "11px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              lineHeight: 2.66,
+              p: "0px 2px",
+              textOverflow: "ellipsis",
+              display: "inline-block",
             }}
-          />
-          <DeleteIcon
-            onClick={(e) => actionIconHanlder(e, item, "delete")}
-            sx={{
-              fontSize: 13,
-              cursor: "pointer",
-              pr: "2px",
-              color: "red",
-            }}
-          />
-        </>
+          >
+            {item.rowName}
+          </Typography>
+        </Tooltip>
+        {position === "bottom" && item.rowName !== "" && (
+          <>
+            <EditIcon
+              onClick={(e) => actionIconHanlder(e, item, "edit")}
+              sx={{
+                fontSize: 14,
+                cursor: "pointer",
+                pr: "2px",
+                color: "#1976d2",
+              }}
+            />
+            <DeleteIcon
+              onClick={(e) => actionIconHanlder(e, item, "delete")}
+              sx={{
+                fontSize: 14,
+                cursor: "pointer",
+                pr: "2px",
+                color: "red",
+              }}
+            />
+          </>
+        )}
+
+        {item?.highlightEnabled &&
+          item?.highlight !== undefined &&
+          item?.highlight !== null && (
+            <Avatar
+              sx={{
+                width: 18,
+                height: 18,
+                ml: 0.5,
+                mr: 0.5,
+                background: "red",
+                cursor: "pointer",
+              }}
+              variant="rounded"
+              onClick={() => setShowHighlightResetModal(item)}
+            >
+              <PriorityHigh style={{ fontSize: 12 }} />
+            </Avatar>
+          )}
+      </Box>
+      {showHighlightResetModal !== null && (
+        <CustomDialog maxWidth="xs" open={true} title={"Confirmation Modal"}>
+          <Box sx={{ p: 1 }}>
+            <Typography variant="body1">
+              Do you want to reset the highlight?
+            </Typography>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mt: 1,
+                gap: 1,
+              }}
+            >
+              <Button
+                size="small"
+                fullWidth
+                color="primary"
+                onClick={handleResetHighlightModal}
+                sx={{ textTransform: "capitalize" }}
+                variant="contained"
+              >
+                Yes
+              </Button>
+              <Button
+                size="small"
+                fullWidth
+                color="error"
+                onClick={() => setShowHighlightResetModal(null)}
+                sx={{ textTransform: "capitalize" }}
+                variant="contained"
+              >
+                No
+              </Button>
+            </Box>
+          </Box>
+        </CustomDialog>
       )}
-    </Box>
+    </>
   );
 };
 
@@ -349,9 +451,7 @@ const TriangleBox = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const globalData = useSelector((state) => state.globalData.data);
-  useEffect(() => {
-    setData(globalData);
-  }, [globalData]);
+
   const dispatch = useDispatch();
   const [defaultPositions, setDefaultPositions] = useState([
     "top",
@@ -363,6 +463,17 @@ const TriangleBox = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [slotMapperList, setSlotMapperList] = useState(Object.values(MAPPING));
   const [addNewAnchorEl, setAddNewAnchorEl] = useState(null);
+  const [rerender, setRerender] = useState(false);
+  const [drillDownViewModal, setDrillDownViewModal] = useState({
+    showModal: false,
+    rowObj: null,
+    modalTitle: "",
+  });
+
+  useEffect(() => {
+    setData(globalData);
+  }, [globalData, rerender]);
+
   const [tempVars, setTempVars] = useState({
     selectedRow: null,
     selectedCol: null,
@@ -691,6 +802,34 @@ const TriangleBox = () => {
     });
   };
 
+  const handleRowClick = (item, position) => {
+    if (
+      position === "bottom" &&
+      item?.highlight !== null &&
+      item?.highlight !== undefined &&
+      item?.highlightEnabled
+    ) {
+      setDrillDownViewModal(() => {
+        return {
+          modalTitle: "Drill Down View",
+          rowObj: null,
+          showModal: true,
+        };
+      });
+      return;
+    }
+    if (
+      position !== "bottom" &&
+      item?.highlight !== null &&
+      item?.highlight !== undefined &&
+      item?.highlightEnabled
+    ) {
+      toast.error(
+        `Please set \"${item.rowName}\" as active quadrant to perform actions.`
+      );
+    }
+  };
+
   const actionButtonClickHandler = (event, item, action) => {
     const userName = localStorage.getItem("userName");
     if (userName === "reader") {
@@ -895,12 +1034,17 @@ const TriangleBox = () => {
   return (
     <>
       {/* <Pill label="Notification sent!" showDuration={2000} /> */}
-
-      <QuadrantButtons emitSelectedRotation={rotateEntire} show={true} />
+      <ToastContainer />
+      <QuadrantButtons
+        emitSelectedRotation={rotateEntire}
+        show={true}
+        rerenderParent={() => setRerender((prev) => !prev)}
+      />
       {/* <LegendComponent /> */}
       <LegendComponent />
 
       <Box
+        key={rerender}
         sx={{
           height: "calc(100lvh)",
           width: "100lvw",
@@ -947,7 +1091,13 @@ const TriangleBox = () => {
             }}
           >
             {getQuadrant("top")?.quadrantListItems.map((item, i) => (
-              <QuadrantListItem item={item} i={i} position="top" key={i} />
+              <QuadrantListItem
+                item={item}
+                i={i}
+                position="top"
+                key={i}
+                rowClickHandler={(e) => handleRowClick(e, "top")}
+              />
             ))}
           </Box>
 
@@ -973,7 +1123,13 @@ const TriangleBox = () => {
           >
             <Box sx={{ transform: "rotate(-90deg)" }}>
               {getQuadrant("right")?.quadrantListItems.map((item, i) => (
-                <QuadrantListItem item={item} i={i} position="right" key={i} />
+                <QuadrantListItem
+                  item={item}
+                  i={i}
+                  position="right"
+                  key={i}
+                  rowClickHandler={(e) => handleRowClick(e, "right")}
+                />
               ))}
             </Box>
           </Box>
@@ -1003,6 +1159,7 @@ const TriangleBox = () => {
                 position="bottom"
                 key={i}
                 actionIconHanlder={actionButtonClickHandler}
+                rowClickHandler={(e) => handleRowClick(e, "bottom")}
               />
             ))}
             <Box
@@ -1116,7 +1273,13 @@ const TriangleBox = () => {
           >
             <Box sx={{ transform: "rotate(-90deg)" }}>
               {getQuadrant("left")?.quadrantListItems.map((item, i) => (
-                <QuadrantListItem item={item} i={i} position="left" key={i} />
+                <QuadrantListItem
+                  item={item}
+                  i={i}
+                  position="left"
+                  key={i}
+                  rowClickHandler={(e) => handleRowClick(e, "left")}
+                />
               ))}
             </Box>
           </Box>
@@ -1497,6 +1660,45 @@ const TriangleBox = () => {
                 Cancel
               </Button>
             </Box>
+          </Box>
+        </CustomDialog>
+      )}
+      {drillDownViewModal?.showModal && (
+        <CustomDialog
+          maxWidth="xl"
+          open={true}
+          title={drillDownViewModal?.modalTitle}
+        >
+          <Box sx={{ p: 1, maxHeight: "80%", overflowY: "auto" }}>
+            <img
+              src={PerplexityFinance}
+              alt="Perplexity Finance"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "4px",
+              }}
+            />
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+            <Button
+              size="small"
+              color="error"
+              onClick={() => {
+                setDrillDownViewModal(() => {
+                  return {
+                    showModal: false,
+                    modalTitle: "",
+                    rowObj: null,
+                  };
+                });
+              }}
+              sx={{ ml: 1, textTransform: "capitalize" }}
+              variant="contained"
+            >
+              Close
+            </Button>
           </Box>
         </CustomDialog>
       )}
