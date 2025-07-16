@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setGlobalData } from "../redux/globalDataSlice";
 import CustomDialog from "./components/CustomDialog";
 import LegendComponent from "./Legend";
+import { useNavigate } from "react-router-dom";
 
 const BASE_COLOR_MAPPING = {
   "#01c666": "Annual Objectives",
@@ -153,9 +154,6 @@ const QuadrantListItem = ({
       Math.abs(curr - zoom) < Math.abs(prev - zoom) ? curr : prev
     );
     const fontSize = TOOLTIP_FONT_SIZES[closestZoom] || "12px";
-    console.log(
-      `Zoom Level: ${zoom}, Closest Zoom: ${closestZoom}, Font Size: ${fontSize}`
-    );
     return fontSize;
   };
 
@@ -167,16 +165,98 @@ const QuadrantListItem = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        width: position === "bottom" ? 339 : 350,
+        width: position === "bottom" ? 320 : 320,
         borderBottom: "0.5px dotted #000",
         minHeight: 29,
-        "&:hover": {
-          transform:
-            position === "bottom" && item.rowName !== ""
-              ? "scale(1.04)"
-              : "scale(1)",
-          transition: "transform 0.5s ease",
-        },
+        position: "relative",
+        overflow: "hidden",
+        ...(item?.highlight !== undefined && {
+          boxShadow: `
+              inset 0 0 10px ${alpha(item?.highlight?.colorCode, 0.6)}
+            `,
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: 0,
+            height: 0,
+            borderStyle: "solid",
+            borderWidth: "2px",
+            borderColor: "transparent",
+            animation: "travelingBorder 3s linear infinite",
+            pointerEvents: "none",
+            boxSizing: "border-box",
+          },
+          "@keyframes travelingBorder": {
+            "0%": {
+              width: 0,
+              height: 0,
+              borderTopColor: `${item?.highlight?.colorCode}`,
+              borderRightColor: "transparent",
+              borderBottomColor: "transparent",
+              borderLeftColor: "transparent",
+            },
+            "15%": {
+              width: "100%",
+              height: 0,
+              borderTopColor: `${item?.highlight?.colorCode}`,
+              borderRightColor: "transparent",
+              borderBottomColor: "transparent",
+              borderLeftColor: "transparent",
+            },
+            "30%": {
+              width: "100%",
+              height: "100%",
+              borderTopColor: "transparent",
+              borderRightColor: `${item?.highlight?.colorCode}`,
+              borderBottomColor: "transparent",
+              borderLeftColor: "transparent",
+            },
+            "45%": {
+              width: "100%",
+              height: "100%",
+              borderTopColor: "transparent",
+              borderRightColor: `${item?.highlight?.colorCode}`,
+              borderBottomColor: "transparent",
+              borderLeftColor: "transparent",
+            },
+
+            "55%": {
+              width: "99.9999%",
+              height: "100%",
+              borderTopColor: "transparent",
+              borderRightColor: "transparent",
+              borderBottomColor: `${item?.highlight?.colorCode}`,
+              borderLeftColor: "transparent",
+            },
+            "70%": {
+              width: 0,
+              height: "100%",
+              borderTopColor: "transparent",
+              borderRightColor: "transparent",
+              borderBottomColor: `${item?.highlight?.colorCode}`,
+              borderLeftColor: "transparent",
+            },
+
+            "85%": {
+              width: 0,
+              height: 0,
+              borderTopColor: "transparent",
+              borderRightColor: "transparent",
+              borderBottomColor: "transparent",
+              borderLeftColor: `${item?.highlight?.colorCode}`,
+            },
+            "100%": {
+              width: 0,
+              height: 0,
+              borderTopColor: `${item?.highlight?.colorCode}`,
+              borderRightColor: "transparent",
+              borderBottomColor: "transparent",
+              borderLeftColor: "transparent",
+            },
+          },
+        }),
       }}
     >
       {item?.category !== undefined && (
@@ -225,7 +305,7 @@ const QuadrantListItem = ({
           variant="caption"
           sx={{
             color: item.rowType === "quandrantRow" ? "#000" : "#1565c0",
-            width: position === "bottom" && item.rowName !== "" ? 300 : 350,
+            width: position === "bottom" && item.rowName !== "" ? 320 : 320,
             minHeight: 30,
             fontSize: "11px",
             whiteSpace: "nowrap",
@@ -239,7 +319,6 @@ const QuadrantListItem = ({
           {item.rowName}
         </Typography>
       </Tooltip>
-
       {position === "bottom" && item.rowName !== "" && (
         <>
           <EditIcon
@@ -267,6 +346,7 @@ const QuadrantListItem = ({
 };
 
 const TriangleBox = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const globalData = useSelector((state) => state.globalData.data);
   useEffect(() => {
@@ -336,6 +416,10 @@ const TriangleBox = () => {
 
   useEffect(() => {
     const userName = localStorage.getItem("userName");
+    if (userName === "" || userName === null || userName === undefined) {
+      navigate("/login");
+      return;
+    }
     if (userName === "reader") {
       return;
     }
@@ -835,8 +919,8 @@ const TriangleBox = () => {
             "left center right"
             "bottom-left bottom bottom-right"
           `,
-            gridTemplateColumns: "auto 350px auto",
-            gridTemplateRows: "auto 350px auto",
+            gridTemplateColumns: "auto 320px auto",
+            gridTemplateRows: "auto 320px auto",
             justifyItems: "center",
             alignItems: "center",
             m: 20,
@@ -852,7 +936,7 @@ const TriangleBox = () => {
               justifyContent: "center",
               alignItems: "center",
               height: `${getLength("top") * cellSize}px`,
-              width: "350px",
+              width: "320px",
               opacity: !hideLists ? 1 : 0,
               transform: !hideLists ? "scale(1)" : "scale(0.95)",
               pointerEvents: !hideLists ? "auto" : "none",
@@ -876,7 +960,7 @@ const TriangleBox = () => {
               justifyContent: "center",
               alignItems: "center",
               width: `${getLength("right") * cellSize}px`,
-              height: "350px",
+              height: "320px",
 
               background: "lightgray",
               opacity: !hideLists ? 1 : 0,
@@ -903,7 +987,7 @@ const TriangleBox = () => {
               justifyContent: "center",
               alignItems: "center",
               height: `${getLength("bottom") * cellSize + 30}px`,
-              width: "350px",
+              width: "320px",
               opacity: !hideLists ? 1 : 0,
               transform: !hideLists ? "scale(1)" : "scale(0.95)",
               pointerEvents: !hideLists ? "auto" : "none",
@@ -1020,7 +1104,7 @@ const TriangleBox = () => {
               justifyContent: "center",
               alignItems: "center",
               width: `${getLength("left") * cellSize + 4}px`,
-              height: "350px",
+              height: "320px",
               position: "relative",
               right: "-38px",
               background: "lightGray",
@@ -1041,8 +1125,8 @@ const TriangleBox = () => {
           <Box
             gridArea="center"
             sx={{
-              width: 350,
-              height: 350,
+              width: 320,
+              height: 320,
               position: "relative",
               transformStyle: "preserve-3d",
               willChange: "transform",
@@ -1356,7 +1440,7 @@ const TriangleBox = () => {
               placeholder="Enter here..."
               variant="outlined"
               sx={{
-                minWidth: "300px",
+                minWidth: "320px",
                 "& .MuiInputBase-input": {
                   fontSize: "13px",
                 },

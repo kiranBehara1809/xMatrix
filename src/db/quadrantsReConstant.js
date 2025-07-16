@@ -1,26 +1,43 @@
 const CATEGORY_ONE = {
-  shortName: "IB",
-  label: "Internet Banking",
+  shortName: "CA",
+  label: "Category A",
   colorCode: "#116129ad",
   refColorCode: "Greenshade",
 };
 const CATEGORY_TWO = {
-  shortName: "RB",
-  label: "Retail Banking",
+  shortName: "CB",
+  label: "Category B",
   colorCode: "#1a7faeb3",
   refColorCode: "teelshade",
 };
 const CATEGORY_THREE = {
-  shortName: "CB",
-  label: "Commercial Banking",
+  shortName: "CC",
+  label: "Category C",
   colorCode: "#988510c4",
   refColorCode: "yellowshade",
 };
 const CATEGORY_FOUR = {
-  shortName: "COB",
-  label: "Cooperative Banking",
+  shortName: "CD",
+  label: "Category D",
   colorCode: "#141a5bbf",
   refColorCode: "Indigoshade",
+};
+
+const HIGHLIGHT_COLOR_OBJ_PURPLE = {
+  colorCode: "#800080", // purple
+  priority: "high",
+};
+const HIGHLIGHT_COLOR_HIGH_OBJ = {
+  colorCode: "#FF0000",
+  priority: "high",
+};
+const HIGHLIGHT_COLOR_MEDIUM_OBJ = {
+  colorCode: "#FFFF00", 
+  priority: "medium",
+};
+const HIGHLIGHT_COLOR_LOW_OBJ = {
+  colorCode: "#008000", 
+  priority: "low",
 };
 
 const ALL_CATEGORIES = [
@@ -46,6 +63,7 @@ const QUADRANTS_CONSTANT = {
           rowType: "quandrantRow",
           sortOrder: "1",
           category: CATEGORY_ONE,
+          highlight: HIGHLIGHT_COLOR_OBJ_PURPLE,
           intersections: [
             { type: "RL", rowId: "b91e9381-5906-470a-a9a5-fc511d93051d" },
             { type: "RL", rowId: "61b0afcc-0530-4c10-8a0d-75fc504e2b7f" },
@@ -127,6 +145,7 @@ const QUADRANTS_CONSTANT = {
           rowType: "quandrantRow",
           sortOrder: "2",
           category: CATEGORY_THREE,
+          highlight: HIGHLIGHT_COLOR_OBJ_PURPLE,
         },
         {
           rowName: "Yearly growth in assets under Management",
@@ -196,6 +215,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "61f1b1b8-bd02-4d8c-b84e-d857abc67c6b",
           rowType: "quandrantRow",
           sortOrder: "2",
+          highlight: HIGHLIGHT_COLOR_OBJ_PURPLE,
           category: CATEGORY_TWO,
         },
         {
