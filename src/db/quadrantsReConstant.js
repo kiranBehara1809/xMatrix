@@ -1,3 +1,35 @@
+const CATEGORY_ONE = {
+  shortName: "IB",
+  label: "Internet Banking",
+  colorCode: "#116129ad",
+  refColorCode: "Greenshade",
+};
+const CATEGORY_TWO = {
+  shortName: "RB",
+  label: "Retail Banking",
+  colorCode: "#1a7faeb3",
+  refColorCode: "teelshade",
+};
+const CATEGORY_THREE = {
+  shortName: "CB",
+  label: "Commercial Banking",
+  colorCode: "#988510c4",
+  refColorCode: "yellowshade",
+};
+const CATEGORY_FOUR = {
+  shortName: "COB",
+  label: "Cooperative Banking",
+  colorCode: "#141a5bbf",
+  refColorCode: "Indigoshade",
+};
+
+const ALL_CATEGORIES = [
+  CATEGORY_ONE,
+  CATEGORY_TWO,
+  CATEGORY_THREE,
+  CATEGORY_FOUR,
+];
+
 const QUADRANTS_CONSTANT = {
   quadrants: [
     {
@@ -13,6 +45,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "7f41e5c1-98a3-4eaf-85ff-1b7f8a6ad812",
           rowType: "quandrantRow",
           sortOrder: "1",
+          category: CATEGORY_ONE,
           intersections: [
             { type: "RL", rowId: "b91e9381-5906-470a-a9a5-fc511d93051d" },
             { type: "RL", rowId: "61b0afcc-0530-4c10-8a0d-75fc504e2b7f" },
@@ -25,6 +58,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "56ae217e-d6f2-49f1-b8d3-5cb98096c6f9",
           rowType: "quandrantRow",
           sortOrder: "2",
+          category: CATEGORY_TWO,
           intersections: [
             { type: "RL", rowId: "61b0afcc-0530-4c10-8a0d-75fc504e2b7f" },
             { type: "RL", rowId: "b91e9381-5906-470a-a9a5-fc511d93051d" },
@@ -43,6 +77,7 @@ const QUADRANTS_CONSTANT = {
             "Develop and launch an enhanced mobile banking app with features like mobile check deposit, budgeting tools",
           rowId: "1c4db07b-ff76-49c2-b8b4-eccdf8eec06f",
           rowType: "quandrantRow",
+          category: CATEGORY_ONE,
           sortOrder: "3",
           intersections: [
             { type: "RL", rowId: "30b36167-c020-4c71-9405-9e5a725b66ae" },
@@ -60,6 +95,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "ccf7814e-7d61-44f6-8be0-df7647d37a47",
           rowType: "quandrantRow",
           sortOrder: "4",
+          category: CATEGORY_FOUR,
           intersections: [
             { type: "RL", rowId: "30b36167-c020-4c71-9405-9e5a725b66ae" },
             { type: "RL", rowId: "d05b037e-8e27-4c27-b8c9-1110833b0fc7" },
@@ -83,24 +119,28 @@ const QUADRANTS_CONSTANT = {
           rowId: "df5bd6f5-6f0f-48d4-b257-560b2ae449f4",
           rowType: "quandrantRow",
           sortOrder: "1",
+          category: CATEGORY_THREE,
         },
         {
           rowName: "Customer satisfaction scores from quarterly surveys",
           rowId: "457f56ee-64bb-41a2-ae54-2d37a325c9e3",
           rowType: "quandrantRow",
           sortOrder: "2",
+          category: CATEGORY_THREE,
         },
         {
           rowName: "Yearly growth in assets under Management",
           rowId: "ae1bc66d-2d3a-41cc-8cde-16ef76f9bdad",
           rowType: "quandrantRow",
           sortOrder: "3",
+          category: CATEGORY_FOUR,
         },
         {
           rowName: "Monthly home loan approval rates",
           rowId: "b7c6489c-c624-4a9e-8db9-c25edc65e278",
           rowType: "quandrantRow",
           sortOrder: "4",
+          category: CATEGORY_ONE,
         },
         {
           rowName: "",
@@ -148,6 +188,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "15452c25-4379-40ff-8372-4a9e5a5f0110",
           rowType: "quandrantRow",
           sortOrder: "1",
+          category: CATEGORY_THREE,
         },
         {
           rowName:
@@ -155,18 +196,21 @@ const QUADRANTS_CONSTANT = {
           rowId: "61f1b1b8-bd02-4d8c-b84e-d857abc67c6b",
           rowType: "quandrantRow",
           sortOrder: "2",
+          category: CATEGORY_TWO,
         },
         {
           rowName: "Become the leading bank in mortgage lending in the region",
           rowId: "6bc145af-94c0-42a5-b8ea-02186a18f0c2",
           rowType: "quandrantRow",
           sortOrder: "3",
+          category: CATEGORY_ONE,
         },
         {
           rowName: "Grow the bank's investment management services",
           rowId: "e6fa4c1d-5d35-49b0-b47d-b14e0e3b91a6",
           rowType: "quandrantRow",
           sortOrder: "4",
+          category: CATEGORY_TWO,
         },
       ],
     },
@@ -183,6 +227,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "b91e9381-5906-470a-a9a5-fc511d93051d",
           rowType: "quandrantRow",
           sortOrder: "1",
+          category: CATEGORY_ONE,
           intersections: [
             { type: "RL", rowId: "6bc145af-94c0-42a5-b8ea-02186a18f0c2" },
           ],
@@ -192,6 +237,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "30b36167-c020-4c71-9405-9e5a725b66ae",
           rowType: "quandrantRow",
           sortOrder: "2",
+          category: CATEGORY_FOUR,
           intersections: [
             { type: "RL", rowId: "61f1b1b8-bd02-4d8c-b84e-d857abc67c6b" },
           ],
@@ -201,6 +247,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "d05b037e-8e27-4c27-b8c9-1110833b0fc7",
           rowType: "quandrantRow",
           sortOrder: "3",
+          category: CATEGORY_TWO,
           intersections: [
             { type: "RL", rowId: "15452c25-4379-40ff-8372-4a9e5a5f0110" },
             { type: "RL", rowId: "e6fa4c1d-5d35-49b0-b47d-b14e0e3b91a6" },
@@ -211,6 +258,7 @@ const QUADRANTS_CONSTANT = {
           rowId: "61b0afcc-0530-4c10-8a0d-75fc504e2b7f",
           rowType: "quandrantRow",
           sortOrder: "4",
+          category: CATEGORY_THREE,
           intersections: [
             { type: "RL", rowId: "15452c25-4379-40ff-8372-4a9e5a5f0110" },
           ],
@@ -220,4 +268,4 @@ const QUADRANTS_CONSTANT = {
   ],
 };
 
-export { QUADRANTS_CONSTANT };
+export { QUADRANTS_CONSTANT, ALL_CATEGORIES };

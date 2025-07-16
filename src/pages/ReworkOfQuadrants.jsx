@@ -19,53 +19,11 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
-import CloseIcon from "@mui/icons-material/Close";
+import { OpenInFull } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { setGlobalData } from "../redux/globalDataSlice";
 import CustomDialog from "./components/CustomDialog";
-
-const LegendComponent = () => {
-  return (
-    <Box
-      sx={{
-        position: "absolute",
-        bottom: "40px",
-        left: "10px",
-        boxShadow:
-          "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
-        borderRadius: "8px",
-        padding: "10px 16px 16px 16px",
-      }}
-    >
-      <span
-        style={{
-          textAlign: "start",
-          fontSize: "13px",
-          color: "#000",
-        }}
-      >
-        <strong>Keys</strong>
-      </span>
-      {Object.entries(MAPPING)?.map(([key, value], index) => (
-        <Box
-          key={index}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "4px",
-          }}
-        >
-          <span style={{ paddingRight: "8px", fontSize: "16px" }}>
-            {value.icon}
-          </span>
-          <span style={{ textAlign: "start", fontSize: "12px", color: "#000" }}>
-            {value.label}
-          </span>
-        </Box>
-      ))}
-    </Box>
-  );
-};
+import LegendComponent from "./Legend";
 
 const BASE_COLOR_MAPPING = {
   "#01c666": "Annual Objectives",
@@ -209,18 +167,34 @@ const QuadrantListItem = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        width: position === "bottom" ? 189 : 200,
+        width: position === "bottom" ? 339 : 350,
         borderBottom: "0.5px dotted #000",
         minHeight: 29,
         "&:hover": {
           transform:
             position === "bottom" && item.rowName !== ""
-              ? "scale(1.07)"
+              ? "scale(1.04)"
               : "scale(1)",
           transition: "transform 0.5s ease",
         },
       }}
     >
+      {item?.category !== undefined && (
+        <Avatar
+          sx={{
+            width: 24,
+            height: 24,
+            ml: 0.5,
+            mr: 0.5,
+            background: item?.category?.colorCode,
+          }}
+          variant="rounded"
+        >
+          <Typography sx={{ fontSize: "8px" }}>
+            {item?.category?.shortName}
+          </Typography>
+        </Avatar>
+      )}
       <Tooltip
         title={showTooltip ? item.rowName : ""}
         arrow
@@ -231,7 +205,7 @@ const QuadrantListItem = ({
               {
                 name: "offset",
                 options: {
-                  offset: [0, position === "bottom" ? 10 : 0],
+                  offset: [0, position === "bottom" ? 35 : 0],
                 },
               },
             ],
@@ -251,7 +225,7 @@ const QuadrantListItem = ({
           variant="caption"
           sx={{
             color: item.rowType === "quandrantRow" ? "#000" : "#1565c0",
-            width: "100%",
+            width: position === "bottom" && item.rowName !== "" ? 300 : 350,
             minHeight: 30,
             fontSize: "11px",
             whiteSpace: "nowrap",
@@ -839,6 +813,7 @@ const TriangleBox = () => {
       {/* <Pill label="Notification sent!" showDuration={2000} /> */}
 
       <QuadrantButtons emitSelectedRotation={rotateEntire} show={true} />
+      {/* <LegendComponent /> */}
       <LegendComponent />
 
       <Box
@@ -860,8 +835,8 @@ const TriangleBox = () => {
             "left center right"
             "bottom-left bottom bottom-right"
           `,
-            gridTemplateColumns: "auto 200px auto",
-            gridTemplateRows: "auto 200px auto",
+            gridTemplateColumns: "auto 350px auto",
+            gridTemplateRows: "auto 350px auto",
             justifyItems: "center",
             alignItems: "center",
             m: 20,
@@ -877,7 +852,7 @@ const TriangleBox = () => {
               justifyContent: "center",
               alignItems: "center",
               height: `${getLength("top") * cellSize}px`,
-              width: "200px",
+              width: "350px",
               opacity: !hideLists ? 1 : 0,
               transform: !hideLists ? "scale(1)" : "scale(0.95)",
               pointerEvents: !hideLists ? "auto" : "none",
@@ -901,7 +876,7 @@ const TriangleBox = () => {
               justifyContent: "center",
               alignItems: "center",
               width: `${getLength("right") * cellSize}px`,
-              height: "200px",
+              height: "350px",
 
               background: "lightgray",
               opacity: !hideLists ? 1 : 0,
@@ -928,7 +903,7 @@ const TriangleBox = () => {
               justifyContent: "center",
               alignItems: "center",
               height: `${getLength("bottom") * cellSize + 30}px`,
-              width: "200px",
+              width: "350px",
               opacity: !hideLists ? 1 : 0,
               transform: !hideLists ? "scale(1)" : "scale(0.95)",
               pointerEvents: !hideLists ? "auto" : "none",
@@ -1045,7 +1020,7 @@ const TriangleBox = () => {
               justifyContent: "center",
               alignItems: "center",
               width: `${getLength("left") * cellSize + 4}px`,
-              height: "200px",
+              height: "350px",
               position: "relative",
               right: "-38px",
               background: "lightGray",
@@ -1066,8 +1041,8 @@ const TriangleBox = () => {
           <Box
             gridArea="center"
             sx={{
-              width: 200,
-              height: 200,
+              width: 350,
+              height: 350,
               position: "relative",
               transformStyle: "preserve-3d",
               willChange: "transform",
@@ -1084,10 +1059,10 @@ const TriangleBox = () => {
 
               // Approximate text positions for each triangle
               const textPositions = [
-                { top: "1%", left: "50%", transform: "translateX(-50%)" }, // top center
-                { top: "50%", right: "1%", transform: "translateY(-50%)" }, // right center
-                { bottom: "1%", left: "50%", transform: "translateX(-50%)" }, // bottom center
-                { top: "50%", left: "1%", transform: "translateY(-50%)" }, // left center
+                { top: "2%", left: "50%", transform: "translateX(-50%)" }, // top center
+                { top: "50%", right: "2%", transform: "translateY(-50%)" }, // right center
+                { bottom: "2%", left: "50%", transform: "translateX(-50%)" }, // bottom center
+                { top: "50%", left: "2%", transform: "translateY(-50%)" }, // left center
               ];
 
               const index = defaultPositions.indexOf(q.quadrantPosition);
@@ -1114,17 +1089,46 @@ const TriangleBox = () => {
                       position: "absolute",
                       color: "#000",
                       pointerEvents: "none",
-                      maxWidth: "70px",
-                      fontWeight: "500",
+                      maxWidth: "100px",
                       backgroundColor: "rgba(255, 255, 255, 0.7)",
                       backdropFilter: "blur(20px)",
                       padding: "2px 5px",
                       textAlign: "center",
-                      fontSize: "10px",
+                      fontSize:
+                        q.basePosition === "bottom" ||
+                        (q.quadrantPosition === "bottom" &&
+                          q.basePosition === "")
+                          ? "14px"
+                          : "12px",
                       borderRadius: "8px",
                       opacity: !hideLists ? 1 : 0,
                       transition: !hideLists ? "opacity 2s linear" : "none",
+                      animation:
+                        q.basePosition === "bottom" ||
+                        (q.quadrantPosition === "bottom" &&
+                          q.basePosition === "")
+                          ? "backgroundPulse 2s infinite"
+                          : "none",
                       ...textPositions[index],
+                      fontWeight:
+                        q.basePosition === "bottom" ||
+                        (q.quadrantPosition === "bottom" &&
+                          q.basePosition === "")
+                          ? "bolder"
+                          : "400",
+
+                      // Keyframes for background pulse
+                      "@keyframes backgroundPulse": {
+                        "0%": {
+                          boxShadow: `0 0 0 0 rgba(75, 77, 79, 0.5)`,
+                        },
+                        "50%": {
+                          boxShadow: "0 0 20px 8px rgba(54, 56, 58, 0.7)",
+                        },
+                        "100%": {
+                          boxShadow: "0 0 0 0 rgba(52, 55, 58, 0.5)",
+                        },
+                      },
                     }}
                   >
                     {BASE_COLOR_MAPPING[q.quadrantColor]}
