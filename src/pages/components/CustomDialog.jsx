@@ -41,7 +41,13 @@ const CustomDialog = ({
       fullWidth
       onClose={handleClose}
       open={open}
-      sx={{ zIndex: 10000000001, ...sx }}
+      // sx={{ zIndex: 10000000001, ...sx }}
+      sx={{
+        ...sx,
+        "& .MuiDialog-paper": {
+          zIndex: 100000000000, // Lower than Select's MenuProps z-index
+        },
+      }}
       maxWidth={maxWidth}
     >
       {icon === null && (

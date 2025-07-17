@@ -19,6 +19,7 @@ import CustomDialog from "./components/CustomDialog";
 import { useDispatch, useSelector } from "react-redux";
 import { Delete, Edit, Warning } from "@mui/icons-material";
 import { setGlobalData } from "../redux/globalDataSlice";
+import ndgf from ".././assets/ndgf.png";
 
 const BASE_COLOR_MAPPING = {
   "#ff1744": "Long-Term Objectives",
@@ -400,6 +401,24 @@ const SlidePanel = () => {
                 p: "4px 8px",
               }}
             >
+              {localData?.quadrantListItems?.length === 0 && (
+                <>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img
+                      src={ndgf}
+                      alt="No Data Found"
+                      width={300}
+                      height={300}
+                    />
+                  </Box>
+                </>
+              )}
               <List dense={false}>
                 {["quandrantRow", "quandrantOwner"].map((type) => {
                   const filteredItems = localData?.quadrantListItems?.filter(
@@ -420,7 +439,7 @@ const SlidePanel = () => {
                       >
                         {type === "quandrantOwner" ? "Owner" : "Items"}
                       </ListSubheader>
-                      {filteredItems.map((x) => (
+                      {filteredItems?.map((x) => (
                         <ListItem
                           key={x.rowId}
                           sx={{
@@ -484,66 +503,6 @@ const SlidePanel = () => {
                   );
                 })}
               </List>
-
-              {/* <List dense={false}>
-                {localData?.quadrantListItems?.map((x) => {
-                  return (
-                    <ListItem
-                      key={crypto.randomUUID()}
-                      sx={{
-                        boxShadow:
-                          "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
-                        mb: 1,
-                        borderRadius: 4,
-                        minHeight: 31,
-                        height: 40,
-                      }}
-                      secondaryAction={
-                        <>
-                          <IconButton
-                            disabled={x.rowName === ""}
-                            edge="end"
-                            aria-label="edit"
-                            onClick={(e) => {
-                              actionButtonClickHandler(e, x, "edit");
-                            }}
-                          >
-                            <Edit
-                              sx={{
-                                color: x.rowName === "" ? "gray" : "#1976d2",
-                                cursor:
-                                  x.rowName === "" ? "not-allowed" : "pointer",
-                              }}
-                            />
-                          </IconButton>
-
-                          <IconButton
-                            disabled={x.rowName === ""}
-                            edge="end"
-                            aria-label="delete"
-                            onClick={(e) => {
-                              actionButtonClickHandler(e, x, "delete");
-                            }}
-                          >
-                            <Delete
-                              sx={{
-                                color: x.rowName === "" ? "gray" : "red",
-                                cursor:
-                                  x.rowName === "" ? "not-allowed" : "pointer",
-                              }}
-                            />
-                          </IconButton>
-                        </>
-                      }
-                    >
-                      <ListItemText
-                        primary={x.rowName}
-                        slotProps={{ primary: { fontSize: "13px", mr: 2 } }}
-                      />
-                    </ListItem>
-                  );
-                })}
-              </List> */}
             </Box>
             <Box
               sx={{
