@@ -10,9 +10,12 @@ import {
   Tooltip,
   Popover,
   TextField,
+  Select,
+  MenuItem,
+  ListItemText,
 } from "@mui/material";
 import PerplexityFinance from "../assets/PerplexityFinance.png";
-import { QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
+import { ALL_CATEGORIES, QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
 import QuadrantButtons from "./quadrantButtons";
 import CircleIcon from "@mui/icons-material/Circle";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
@@ -83,6 +86,7 @@ const QuadrantListItem = ({
   rowClickHandler = () => {},
 }) => {
   const dispatch = useDispatch();
+  const [isRowHovered, setIsRowHovered] = useState(false);
   const globalData = useSelector((state) => state.globalData?.data);
   const [showHighlightResetModal, setShowHighlightResetModal] = useState(null);
   const textRef = useRef(null);
@@ -194,6 +198,8 @@ const QuadrantListItem = ({
         onClick={() => {
           rowClickHandler(item);
         }}
+        onMouseEnter={() => setIsRowHovered(true)}
+        onMouseLeave={() => setIsRowHovered(false)}
         sx={{
           cursor:
             !item?.highlightEnabled ||
@@ -362,10 +368,13 @@ const QuadrantListItem = ({
             {item.rowName}
           </Typography>
         </Tooltip>
-        {position === "bottom" && item.rowName !== "" && (
+        {isRowHovered && position === "bottom" && item.rowName !== "" && (
           <>
             <EditIcon
-              onClick={(e) => actionIconHanlder(e, item, "edit")}
+              onClick={(e) => {
+                e.stopPropagation();
+                actionIconHanlder(e, item, "edit");
+              }}
               sx={{
                 fontSize: 14,
                 cursor: "pointer",
@@ -374,7 +383,10 @@ const QuadrantListItem = ({
               }}
             />
             <DeleteIcon
-              onClick={(e) => actionIconHanlder(e, item, "delete")}
+              onClick={(e) => {
+                e.stopPropagation();
+                actionIconHanlder(e, item, "delete");
+              }}
               sx={{
                 fontSize: 14,
                 cursor: "pointer",
@@ -398,7 +410,10 @@ const QuadrantListItem = ({
                 cursor: "pointer",
               }}
               variant="rounded"
-              onClick={() => setShowHighlightResetModal(item)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowHighlightResetModal(item);
+              }}
             >
               <PriorityHigh style={{ fontSize: 12 }} />
             </Avatar>
@@ -482,6 +497,7 @@ const TriangleBox = () => {
   const [editDeleteTempVars, setEditDeleteTempVars] = useState({
     editFlag: false,
     rowText: "",
+    category: null,
     rowObj: null,
     action: null,
     isOwnerAdding: false,
@@ -493,6 +509,9 @@ const TriangleBox = () => {
     bottomLeft: true,
     topLeft: true,
   });
+
+  const [selected, setSelected] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const [animation, setAnimation] = useState({
     top: true,
@@ -597,9 +616,7 @@ const TriangleBox = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   dispatch(setGlobalData(JSON.parse(JSON.stringify(QUADRANTS_CONSTANT))));
-  // }, []);
+
 
   useEffect(() => {
     const blueQuadrant = data?.quadrants?.find((x) => x.basePosition === "top");
@@ -789,10 +806,13 @@ const TriangleBox = () => {
 
   const closeAddPopover = () => {
     setAddNewAnchorEl(null);
+    setSelectedCategory(null);
+    setSelected("");
     setEditDeleteTempVars((prev) => {
       return {
         ...prev,
         editFlag: false,
+        category: null,
         isOwnerAdding: false,
         rowText: "",
         action: "",
@@ -803,6 +823,7 @@ const TriangleBox = () => {
   };
 
   const handleRowClick = (item, position) => {
+    const { quadrantName } = getQuadrant(position);
     if (
       position === "bottom" &&
       item?.highlight !== null &&
@@ -825,7 +846,7 @@ const TriangleBox = () => {
       item?.highlightEnabled
     ) {
       toast.error(
-        `Please set \"${item.rowName}\" as active quadrant to perform actions.`
+        `Please set \"${quadrantName}\" as the active quadrant to perform actions.`
       );
     }
   };
@@ -843,6 +864,7 @@ const TriangleBox = () => {
         action: action,
         isOwnerAdding: item.rowType === "quandrantOwner",
         rowText: item.rowName,
+        category: item.category,
         rowObj: item,
         popoverTitle: `${action === "delete" ? "Delete" : "Edit"} Row Item`,
       };
@@ -952,8 +974,15 @@ const TriangleBox = () => {
   };
 
   const handleSaveOfNewRow = () => {
-    const { rowText, isOwnerAdding, editFlag, popoverTitle, rowObj, action } =
-      editDeleteTempVars;
+    const {
+      rowText,
+      isOwnerAdding,
+      category,
+      editFlag,
+      popoverTitle,
+      rowObj,
+      action,
+    } = editDeleteTempVars;
 
     // In case of delete action
     if (action === "delete" && rowObj?.rowId) {
@@ -978,6 +1007,7 @@ const TriangleBox = () => {
       rowName: rowText,
       rowId: editFlag ? rowObj?.rowId : crypto.randomUUID(),
       rowType: isOwnerAdding ? "quandrantOwner" : "quandrantRow",
+      category: category,
     };
 
     setData((prev) => {
@@ -989,7 +1019,9 @@ const TriangleBox = () => {
         if (editFlag && rowObj) {
           // Edit mode: update rowName of the matching row
           updatedRowItems = quad.quadrantListItems.map((item) =>
-            item.rowId === rowObj?.rowId ? { ...item, rowName: rowText } : item
+            item.rowId === rowObj?.rowId
+              ? { ...item, rowName: rowText, category }
+              : item
           );
         } else {
           // Add mode: insert new row via your existing helper
@@ -1189,6 +1221,7 @@ const TriangleBox = () => {
                       ...prev,
                       editFlag: false,
                       action: "new",
+                      category: null,
                       isOwnerAdding: false,
                       rowText: "",
                       rowObj: null,
@@ -1221,6 +1254,7 @@ const TriangleBox = () => {
                     return {
                       ...prev,
                       editFlag: false,
+                      category: null,
                       action: "new",
                       isOwnerAdding: true,
                       rowText: "",
@@ -1350,32 +1384,19 @@ const TriangleBox = () => {
                       borderRadius: "8px",
                       opacity: !hideLists ? 1 : 0,
                       transition: !hideLists ? "opacity 2s linear" : "none",
-                      animation:
+                      boxShadow:
                         q.basePosition === "bottom" ||
                         (q.quadrantPosition === "bottom" &&
                           q.basePosition === "")
-                          ? "backgroundPulse 2s infinite"
+                          ? "0 0 20px 8px rgba(54, 56, 58, 0.7)"
                           : "none",
                       ...textPositions[index],
                       fontWeight:
                         q.basePosition === "bottom" ||
                         (q.quadrantPosition === "bottom" &&
                           q.basePosition === "")
-                          ? "bolder"
+                          ? "bold"
                           : "400",
-
-                      // Keyframes for background pulse
-                      "@keyframes backgroundPulse": {
-                        "0%": {
-                          boxShadow: `0 0 0 0 rgba(75, 77, 79, 0.5)`,
-                        },
-                        "50%": {
-                          boxShadow: "0 0 20px 8px rgba(54, 56, 58, 0.7)",
-                        },
-                        "100%": {
-                          boxShadow: "0 0 0 0 rgba(52, 55, 58, 0.5)",
-                        },
-                      },
                     }}
                   >
                     {BASE_COLOR_MAPPING[q.quadrantColor]}
@@ -1597,6 +1618,68 @@ const TriangleBox = () => {
           sx={{ transform: `scale(${checkZoomLevelAndIncreasePopover()})` }}
         >
           <Box sx={{ p: 1 }}>
+            <Select
+              disabled={editDeleteTempVars?.action === "delete"}
+              size="small"
+              fullWidth
+              // sx={{ maxWidth: 180, sx={{ zIndex: 100000000001 }} }}
+              sx={{ zIndex: "1000000000000002 !important", mb: 1 }}
+              value={editDeleteTempVars?.category?.shortName}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    zIndex: "1000000000000002 !important",
+                  },
+                },
+              }}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                setSelected(newValue);
+                const selectedOption = ALL_CATEGORIES.find(
+                  (opt) => opt.shortName === newValue
+                );
+                setSelectedCategory(selectedOption || null);
+                setEditDeleteTempVars((prev) => {
+                  return {
+                    ...prev,
+                    category: selectedOption,
+                  };
+                });
+              }}
+              displayEmpty
+              renderValue={(selectedValue) =>
+                selectedValue ? (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <span style={{ fontSize: "12px" }}>
+                      {
+                        ALL_CATEGORIES.find(
+                          (opt) => opt.shortName === selectedValue
+                        )?.label
+                      }
+                    </span>
+                  </Box>
+                ) : (
+                  <span style={{ color: "#888", fontSize: "12px" }}>
+                    Category
+                  </span>
+                )
+              }
+            >
+              {ALL_CATEGORIES.map((option) => (
+                <MenuItem key={option.shortName} value={option.shortName}>
+                  <ListItemText
+                    primary={option.label}
+                    slotProps={{
+                      primary: {
+                        sx: {
+                          fontSize: 12,
+                        },
+                      },
+                    }}
+                  />
+                </MenuItem>
+              ))}
+            </Select>
             <TextField
               size="small"
               fullWidth
