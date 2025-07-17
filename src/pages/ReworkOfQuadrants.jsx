@@ -30,6 +30,7 @@ import CustomDialog from "./components/CustomDialog";
 import LegendComponent from "./Legend";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import { styled } from "@mui/system";
 
 const BASE_COLOR_MAPPING = {
   "#01c666": "Annual Objectives",
@@ -37,6 +38,39 @@ const BASE_COLOR_MAPPING = {
   "#ff9100": "Metrics to Improve",
   "#2979ff": "Top Level Improvements",
 };
+
+// Styled component for the animated border
+const AnimatedBorderBox = styled(Box)(({ theme, style, showAnimation }) => ({
+  position: "relative",
+  display: "inline-flex",
+  background: "#fff", // Background to prevent bleed-through
+  border: 1,
+  ...style,
+  ...(showAnimation && {
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: -2,
+      left: -2,
+      right: -2,
+      bottom: -2,
+      border: "2px solid transparent",
+      background: "linear-gradient(45deg, #f06, #48f, #0ff, #f06) border-box",
+      backgroundSize: "400%",
+      animation: "borderAnimation 4s linear infinite",
+      zIndex: -1,
+    },
+  }),
+
+  "@keyframes borderAnimation": {
+    "0%": {
+      backgroundPosition: "0% 50%",
+    },
+    "100%": {
+      backgroundPosition: "400% 50%",
+    },
+  },
+}));
 
 const MAPPING = {
   RL: {
@@ -71,7 +105,7 @@ const MAPPING = {
   }, // SECONDARY RESPONSIBILITY
 };
 
-const cellSize = 30;
+const cellSize = 32;
 
 function isTextOverflowing(i, position) {
   const el = document.getElementById(`${i}+${position}`);
@@ -201,224 +235,168 @@ const QuadrantListItem = ({
         onMouseEnter={() => setIsRowHovered(true)}
         onMouseLeave={() => setIsRowHovered(false)}
         sx={{
-          cursor:
-            !item?.highlightEnabled ||
-            item?.highlight === undefined ||
-            item?.highlight === null
-              ? "default"
-              : "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: position === "bottom" ? 320 : 320,
-          borderBottom: "0.5px dotted #000",
-          minHeight: 29,
-          position: "relative",
-          overflow: "hidden",
-          ...(!item?.highlightEnabled ||
-          item?.highlight === undefined ||
-          item?.highlight === null
-            ? {}
-            : {
-                boxShadow: `
-              inset 0 0 10px ${alpha(item?.highlight?.colorCode, 0.6)}
-            `,
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: 0,
-                  height: 0,
-                  borderStyle: "solid",
-                  borderWidth: "2px",
-                  borderColor: "transparent",
-                  animation: "travelingBorder 3s linear infinite",
-                  pointerEvents: "none",
-                  boxSizing: "border-box",
-                },
-                "@keyframes travelingBorder": {
-                  "0%": {
-                    width: 0,
-                    height: 0,
-                    borderTopColor: `${item?.highlight?.colorCode}`,
-                    borderRightColor: "transparent",
-                    borderBottomColor: "transparent",
-                    borderLeftColor: "transparent",
-                  },
-                  "15%": {
-                    width: "100%",
-                    height: 0,
-                    borderTopColor: `${item?.highlight?.colorCode}`,
-                    borderRightColor: "transparent",
-                    borderBottomColor: "transparent",
-                    borderLeftColor: "transparent",
-                  },
-                  "30%": {
-                    width: "100%",
-                    height: "100%",
-                    borderTopColor: "transparent",
-                    borderRightColor: `${item?.highlight?.colorCode}`,
-                    borderBottomColor: "transparent",
-                    borderLeftColor: "transparent",
-                  },
-                  "45%": {
-                    width: "100%",
-                    height: "100%",
-                    borderTopColor: "transparent",
-                    borderRightColor: `${item?.highlight?.colorCode}`,
-                    borderBottomColor: "transparent",
-                    borderLeftColor: "transparent",
-                  },
-
-                  "55%": {
-                    width: "99.9999%",
-                    height: "100%",
-                    borderTopColor: "transparent",
-                    borderRightColor: "transparent",
-                    borderBottomColor: `${item?.highlight?.colorCode}`,
-                    borderLeftColor: "transparent",
-                  },
-                  "70%": {
-                    width: 0,
-                    height: "100%",
-                    borderTopColor: "transparent",
-                    borderRightColor: "transparent",
-                    borderBottomColor: `${item?.highlight?.colorCode}`,
-                    borderLeftColor: "transparent",
-                  },
-
-                  "85%": {
-                    width: 0,
-                    height: 0,
-                    borderTopColor: "transparent",
-                    borderRightColor: "transparent",
-                    borderBottomColor: "transparent",
-                    borderLeftColor: `${item?.highlight?.colorCode}`,
-                  },
-                  "100%": {
-                    width: 0,
-                    height: 0,
-                    borderTopColor: `${item?.highlight?.colorCode}`,
-                    borderRightColor: "transparent",
-                    borderBottomColor: "transparent",
-                    borderLeftColor: "transparent",
-                  },
-                },
-              }),
+          // cursor:
+          //   !item?.highlightEnabled ||
+          //   item?.highlight === undefined ||
+          //   item?.highlight === null
+          //     ? "default"
+          //     : "pointer",
+          // display: "flex",
+          // alignItems: "center",
+          // justifyContent: "space-between",
+          // width: position === "bottom" ? 320 : 320,
+          // borderBottom: "5px dotted #000",
+          minHeight: 32,
+          // position: "relative",
+          // overflow: "hidden",
         }}
       >
-        {item?.category !== undefined && (
-          <Avatar
-            sx={{
-              width: 24,
-              height: 24,
-              ml: 0.5,
-              mr: 0.5,
-              background: item?.category?.colorCode,
-            }}
-            variant="rounded"
-          >
-            <Typography sx={{ fontSize: "8px" }}>
-              {item?.category?.shortName}
-            </Typography>
-          </Avatar>
-        )}
-        <Tooltip
-          title={showTooltip ? item.rowName : ""}
-          arrow
-          placement={position === "bottom" ? "left" : "right"}
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: "offset",
-                  options: {
-                    offset: [0, position === "bottom" ? 35 : 0],
-                  },
-                },
-              ],
-            },
-            tooltip: {
-              sx: {
-                fontSize: tooltipFontSize,
-                padding: "8px",
-                color: "#fff",
-              },
-            },
+        <AnimatedBorderBox
+          style={{
+            cursor:
+              !item?.highlightEnabled ||
+              item?.highlight === undefined ||
+              item?.highlight === null
+                ? "default"
+                : "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: position === "bottom" ? 320 : 320,
+            boxShadow:
+              item?.highlightEnabled &&
+              item?.highlight !== undefined &&
+              item?.highlight !== null
+                ? `inset 0 0 10px ${alpha(
+                    item?.highlight?.colorCode ?? "#00000000",
+                    0.6
+                  )}`
+                : "none",
+            // borderBottom: "0.5px dotted #000",
+            // borderRadius: "8px",
+            // border: "2px",
+            // position: "relative",
+            // overflow: "hidden",
           }}
+          showAnimation={
+            item?.highlight !== undefined &&
+            item?.highlight !== null &&
+            item?.highlightEnabled
+          }
         >
-          <Typography
-            id={`${i}+${position}`}
-            ref={textRef}
-            variant="caption"
-            sx={{
-              color: item.rowType === "quandrantRow" ? "#000" : "#1565c0",
-              width: position === "bottom" && item.rowName !== "" ? 320 : 320,
-              minHeight: 30,
-              fontSize: "11px",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              lineHeight: 2.66,
-              p: "0px 2px",
-              textOverflow: "ellipsis",
-              display: "inline-block",
-            }}
-          >
-            {item.rowName}
-          </Typography>
-        </Tooltip>
-        {isRowHovered && position === "bottom" && item.rowName !== "" && (
-          <>
-            <EditIcon
-              onClick={(e) => {
-                e.stopPropagation();
-                actionIconHanlder(e, item, "edit");
-              }}
-              sx={{
-                fontSize: 14,
-                cursor: "pointer",
-                pr: "2px",
-                color: "#1976d2",
-              }}
-            />
-            <DeleteIcon
-              onClick={(e) => {
-                e.stopPropagation();
-                actionIconHanlder(e, item, "delete");
-              }}
-              sx={{
-                fontSize: 14,
-                cursor: "pointer",
-                pr: "2px",
-                color: "red",
-              }}
-            />
-          </>
-        )}
-
-        {item?.highlightEnabled &&
-          item?.highlight !== undefined &&
-          item?.highlight !== null && (
+          {item?.category !== undefined && (
             <Avatar
               sx={{
-                width: 18,
-                height: 18,
+                width: 24,
+                height: 24,
                 ml: 0.5,
                 mr: 0.5,
-                background: "red",
-                cursor: "pointer",
+                background: item?.category?.colorCode,
               }}
               variant="rounded"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowHighlightResetModal(item);
-              }}
             >
-              <PriorityHigh style={{ fontSize: 12 }} />
+              <Typography sx={{ fontSize: "8px" }}>
+                {item?.category?.shortName}
+              </Typography>
             </Avatar>
           )}
+          <Tooltip
+            title={showTooltip ? item.rowName : ""}
+            arrow
+            placement={position === "bottom" ? "left" : "right"}
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [0, position === "bottom" ? 35 : 0],
+                    },
+                  },
+                ],
+              },
+              tooltip: {
+                sx: {
+                  fontSize: tooltipFontSize,
+                  padding: "8px",
+                  color: "#fff",
+                },
+              },
+            }}
+          >
+            <Typography
+              id={`${i}+${position}`}
+              ref={textRef}
+              variant="caption"
+              sx={{
+                color: item.rowType === "quandrantRow" ? "#000" : "#1565c0",
+                width: position === "bottom" && item.rowName !== "" ? 320 : 320,
+                minHeight: 30,
+                fontSize: "11px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                lineHeight: 2.66,
+                p: "0px 2px",
+                textOverflow: "ellipsis",
+                display: "inline-block",
+              }}
+            >
+              {item.rowName}
+            </Typography>
+          </Tooltip>
+          {isRowHovered && position === "bottom" && item.rowName !== "" && (
+            <>
+              <EditIcon
+                onClick={(e) => {
+                  e.stopPropagation();
+                  actionIconHanlder(e, item, "edit");
+                }}
+                sx={{
+                  fontSize: 14,
+                  cursor: "pointer",
+                  pr: "2px",
+                  color: "#1976d2",
+                }}
+              />
+              <DeleteIcon
+                onClick={(e) => {
+                  e.stopPropagation();
+                  actionIconHanlder(e, item, "delete");
+                }}
+                sx={{
+                  fontSize: 14,
+                  cursor: "pointer",
+                  pr: "2px",
+                  color: "red",
+                }}
+              />
+            </>
+          )}
+
+          {item?.highlightEnabled &&
+            item?.highlight !== undefined &&
+            item?.highlight !== null && (
+              <Avatar
+                sx={{
+                  width: 18,
+                  height: 18,
+                  ml: 0.5,
+                  mr: 0.5,
+                  background: "red",
+                  cursor: "pointer",
+                }}
+                variant="rounded"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowHighlightResetModal(item);
+                }}
+              >
+                <PriorityHigh style={{ fontSize: 12 }} />
+              </Avatar>
+            )}
+        </AnimatedBorderBox>
       </Box>
+
       {showHighlightResetModal !== null && (
         <CustomDialog maxWidth="xs" open={true} title={"Confirmation Modal"}>
           <Box sx={{ p: 1 }}>
@@ -509,9 +487,6 @@ const TriangleBox = () => {
     bottomLeft: true,
     topLeft: true,
   });
-
-  const [selected, setSelected] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const [animation, setAnimation] = useState({
     top: true,
@@ -615,8 +590,6 @@ const TriangleBox = () => {
       });
     };
   }, []);
-
-
 
   useEffect(() => {
     const blueQuadrant = data?.quadrants?.find((x) => x.basePosition === "top");
@@ -806,8 +779,6 @@ const TriangleBox = () => {
 
   const closeAddPopover = () => {
     setAddNewAnchorEl(null);
-    setSelectedCategory(null);
-    setSelected("");
     setEditDeleteTempVars((prev) => {
       return {
         ...prev,
@@ -1078,471 +1049,478 @@ const TriangleBox = () => {
       <Box
         key={rerender}
         sx={{
-          height: "calc(100lvh)",
-          width: "100lvw",
+          height: "100vh",
+          width: "100vw",
           overflow: "auto",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
         }}
       >
-        <Box
-          id="centralsquare"
-          sx={{
-            display: "grid",
-            gridTemplateAreas: `
+        {/* <Box sx={{ height: "100%" }}> */}
+          <Box
+            id="centralsquare"
+            sx={{
+              display: "grid",
+              gridTemplateAreas: `
             "top-left top top-right"
             "left center right"
             "bottom-left bottom bottom-right"
           `,
-            gridTemplateColumns: "auto 320px auto",
-            gridTemplateRows: "auto 320px auto",
-            justifyItems: "center",
-            alignItems: "center",
-            m: 20,
-          }}
-        >
-          {/* Render each side dynamically */}
-          {/* Top - vertical */}
-          <Box
-            gridArea="top"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
+              gridTemplateColumns: "auto 320px auto",
+              gridTemplateRows: "auto 320px auto",
+              justifyItems: "center",
               alignItems: "center",
-              height: `${getLength("top") * cellSize}px`,
-              width: "320px",
-              opacity: !hideLists ? 1 : 0,
-              transform: !hideLists ? "scale(1)" : "scale(0.95)",
-              pointerEvents: !hideLists ? "auto" : "none",
-              transition: "opacity 1.5s ease, transform 1.5s ease",
-              background: "lightgray",
-              //   ...margins.topright,
-              boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+              m: 20,
+              // height :"100%"
             }}
           >
-            {getQuadrant("top")?.quadrantListItems.map((item, i) => (
-              <QuadrantListItem
-                item={item}
-                i={i}
-                position="top"
-                key={i}
-                rowClickHandler={(e) => handleRowClick(e, "top")}
-              />
-            ))}
-          </Box>
-
-          {/* Right - horizontal */}
-          <Box
-            gridArea="right"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              width: `${getLength("right") * cellSize}px`,
-              height: "320px",
-
-              background: "lightgray",
-              opacity: !hideLists ? 1 : 0,
-              pointerEvents: !hideLists ? "auto" : "none",
-              transition: "opacity 2s ease, transform 2s ease",
-              // ...margins.rightList,
-              borderTop: "0.5px dotted #000",
-              boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-            }}
-          >
-            <Box sx={{ transform: "rotate(-90deg)" }}>
-              {getQuadrant("right")?.quadrantListItems.map((item, i) => (
-                <QuadrantListItem
-                  item={item}
-                  i={i}
-                  position="right"
-                  key={i}
-                  rowClickHandler={(e) => handleRowClick(e, "right")}
-                />
-              ))}
-            </Box>
-          </Box>
-
-          {/* Bottom - vertical */}
-          <Box
-            gridArea="bottom"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              height: `${getLength("bottom") * cellSize + 30}px`,
-              width: "320px",
-              opacity: !hideLists ? 1 : 0,
-              transform: !hideLists ? "scale(1)" : "scale(0.95)",
-              pointerEvents: !hideLists ? "auto" : "none",
-              transition: "opacity 2s ease, transform 2s ease",
-              boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-              borderTop: "0.5px dotted #000",
-            }}
-          >
-            {getQuadrant("bottom")?.quadrantListItems.map((item, i) => (
-              <QuadrantListItem
-                item={item}
-                i={i}
-                position="bottom"
-                key={i}
-                actionIconHanlder={actionButtonClickHandler}
-                rowClickHandler={(e) => handleRowClick(e, "bottom")}
-              />
-            ))}
+            {/* Render each side dynamically */}
+            {/* Top - vertical */}
             <Box
+              gridArea="top"
               sx={{
                 display: "flex",
-                alignItems: "center",
+                flexDirection: "column",
                 justifyContent: "center",
-                width: "100%",
-                minHeight: 30,
-                cursor: "pointer",
+                alignItems: "center",
+                height: `${getLength("top") * cellSize}px`,
+                width: "320px",
+                opacity: !hideLists ? 1 : 0,
+                transform: !hideLists ? "scale(1)" : "scale(0.95)",
+                pointerEvents: !hideLists ? "auto" : "none",
+                transition: "opacity 1.5s ease, transform 1.5s ease",
+                background: "lightgray",
+                //   ...margins.topright,
+                boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                onClick={(e) => {
-                  const userName = localStorage.getItem("userName");
-                  if (userName === "reader") {
-                    return;
-                  }
-                  setAddNewAnchorEl(e.currentTarget);
-                  setEditDeleteTempVars((prev) => {
-                    return {
-                      ...prev,
-                      editFlag: false,
-                      action: "new",
-                      category: null,
-                      isOwnerAdding: false,
-                      rowText: "",
-                      rowObj: null,
-                      popoverTitle: `Add Row Item`,
-                    };
-                  });
-                }}
-              >
-                <AddBoxIcon
-                  sx={{
-                    fontSize: 13,
-                    cursor: "pointer",
-                    pr: "2px",
-                    color: "#1976d2",
-                  }}
-                />
-                <Typography variant="caption" sx={{ color: "#000" }}>
-                  Add New
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                onClick={(e) => {
-                  setAddNewAnchorEl(e.currentTarget);
-                  setEditDeleteTempVars((prev) => {
-                    return {
-                      ...prev,
-                      editFlag: false,
-                      category: null,
-                      action: "new",
-                      isOwnerAdding: true,
-                      rowText: "",
-                      rowObj: null,
-                      popoverTitle: `Add Owner`,
-                    };
-                  });
-                }}
-              >
-                {getQuadrant("bottom")?.quadrantListItems?.filter(
-                  (x) => x.rowType === "quandrantOwner"
-                )?.length > 1 && (
-                  <>
-                    <AddBoxIcon
-                      sx={{
-                        fontSize: 13,
-                        ml: 1,
-                        cursor: "pointer",
-                        pr: "2px",
-                        color: "#1976d2",
-                      }}
-                    />
-                    <Typography variant="caption" sx={{ color: "#000" }}>
-                      Add New Owner
-                    </Typography>
-                  </>
-                )}
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Left - horizontal */}
-          <Box
-            gridArea="left"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              width: `${getLength("left") * cellSize + 4}px`,
-              height: "320px",
-              position: "relative",
-              right: "-38px",
-              background: "lightGray",
-              opacity: !hideLists ? 1 : 0,
-              pointerEvents: !hideLists ? "auto" : "none",
-              transition: "opacity 2s ease, transform 2s ease",
-              // ...margins.leftList,
-            }}
-          >
-            <Box sx={{ transform: "rotate(-90deg)" }}>
-              {getQuadrant("left")?.quadrantListItems.map((item, i) => (
+              {getQuadrant("top")?.quadrantListItems.map((item, i) => (
                 <QuadrantListItem
                   item={item}
                   i={i}
-                  position="left"
+                  position="top"
                   key={i}
-                  rowClickHandler={(e) => handleRowClick(e, "left")}
+                  rowClickHandler={(e) => handleRowClick(e, "top")}
                 />
               ))}
             </Box>
-          </Box>
 
-          {/* Center square with triangles - dynamic colors */}
-          <Box
-            gridArea="center"
-            sx={{
-              width: 320,
-              height: 320,
-              position: "relative",
-              transformStyle: "preserve-3d",
-              willChange: "transform",
-            }}
-          >
-            {data?.quadrants?.map((q, i) => {
-              // Define clip paths for top, right, bottom, left
-              const clipPaths = [
-                "polygon(0% 0%, 100% 0%, 50% 50%)", // top
-                "polygon(100% 0%, 100% 100%, 50% 50%)", // right
-                "polygon(100% 100%, 0% 100%, 50% 50%)", // bottom
-                "polygon(0% 100%, 0% 0%, 50% 50%)", // left
-              ];
+            {/* Right - horizontal */}
+            <Box
+              gridArea="right"
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                width: `${getLength("right") * cellSize}px`,
+                height: "320px",
 
-              // Approximate text positions for each triangle
-              const textPositions = [
-                { top: "2%", left: "50%", transform: "translateX(-50%)" }, // top center
-                { top: "50%", right: "2%", transform: "translateY(-50%)" }, // right center
-                { bottom: "2%", left: "50%", transform: "translateX(-50%)" }, // bottom center
-                { top: "50%", left: "2%", transform: "translateY(-50%)" }, // left center
-              ];
+                background: "lightgray",
+                opacity: !hideLists ? 1 : 0,
+                pointerEvents: !hideLists ? "auto" : "none",
+                transition: "opacity 2s ease, transform 2s ease",
+                // ...margins.rightList,
+                borderTop: "0.5px dotted #000",
+                boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+              }}
+            >
+              <Box sx={{ transform: "rotate(-90deg)" }}>
+                {getQuadrant("right")?.quadrantListItems.map((item, i) => (
+                  <QuadrantListItem
+                    item={item}
+                    i={i}
+                    position="right"
+                    key={i}
+                    rowClickHandler={(e) => handleRowClick(e, "right")}
+                  />
+                ))}
+              </Box>
+            </Box>
 
-              const index = defaultPositions.indexOf(q.quadrantPosition);
-
-              return (
+            {/* Bottom - vertical */}
+            <Box
+              gridArea="bottom"
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                height: `${getLength("bottom") * cellSize + 30}px`,
+                width: "320px",
+                opacity: !hideLists ? 1 : 0,
+                transform: !hideLists ? "scale(1)" : "scale(0.95)",
+                pointerEvents: !hideLists ? "auto" : "none",
+                transition: "opacity 2s ease, transform 2s ease",
+                boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                borderTop: "0.5px dotted #000",
+              }}
+            >
+              {getQuadrant("bottom")?.quadrantListItems.map((item, i) => (
+                <QuadrantListItem
+                  item={item}
+                  i={i}
+                  position="bottom"
+                  key={i}
+                  actionIconHanlder={actionButtonClickHandler}
+                  rowClickHandler={(e) => handleRowClick(e, "bottom")}
+                />
+              ))}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  minHeight: 30,
+                  cursor: "pointer",
+                }}
+              >
                 <Box
-                  key={q.quadrantName}
                   sx={{
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                    clipPath: clipPaths[index],
-                    backgroundColor: alpha(q.quadrantColor, 0.6),
-                    transform: !hideLists ? "rotate(0deg)" : "rotate(180deg)",
-                    transition: !hideLists ? "transform 0.3s linear" : "none",
-                    // willChange: !hideLists
-                    //   ? "transform, clip-path"
-                    //   : "clip-path",
-                    backfaceVisibility: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  onClick={(e) => {
+                    const userName = localStorage.getItem("userName");
+                    if (userName === "reader") {
+                      return;
+                    }
+                    setAddNewAnchorEl(e.currentTarget);
+                    setEditDeleteTempVars((prev) => {
+                      return {
+                        ...prev,
+                        editFlag: false,
+                        action: "new",
+                        category: null,
+                        isOwnerAdding: false,
+                        rowText: "",
+                        rowObj: null,
+                        popoverTitle: `Add Row Item`,
+                      };
+                    });
                   }}
                 >
+                  <AddBoxIcon
+                    sx={{
+                      fontSize: 13,
+                      cursor: "pointer",
+                      pr: "2px",
+                      color: "#1976d2",
+                    }}
+                  />
+                  <Typography variant="caption" sx={{ color: "#000" }}>
+                    Add New
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  onClick={(e) => {
+                    setAddNewAnchorEl(e.currentTarget);
+                    setEditDeleteTempVars((prev) => {
+                      return {
+                        ...prev,
+                        editFlag: false,
+                        category: null,
+                        action: "new",
+                        isOwnerAdding: true,
+                        rowText: "",
+                        rowObj: null,
+                        popoverTitle: `Add Owner`,
+                      };
+                    });
+                  }}
+                >
+                  {getQuadrant("bottom")?.quadrantListItems?.filter(
+                    (x) => x.rowType === "quandrantOwner"
+                  )?.length > 1 && (
+                    <>
+                      <AddBoxIcon
+                        sx={{
+                          fontSize: 13,
+                          ml: 1,
+                          cursor: "pointer",
+                          pr: "2px",
+                          color: "#1976d2",
+                        }}
+                      />
+                      <Typography variant="caption" sx={{ color: "#000" }}>
+                        Add New Owner
+                      </Typography>
+                    </>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Left - horizontal */}
+            <Box
+              gridArea="left"
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                width: `${getLength("left") * cellSize + 4}px`,
+                height: "320px",
+                position: "relative",
+                right: "-38px",
+                background: "lightGray",
+                opacity: !hideLists ? 1 : 0,
+                pointerEvents: !hideLists ? "auto" : "none",
+                transition: "opacity 2s ease, transform 2s ease",
+                // ...margins.leftList,
+              }}
+            >
+              <Box sx={{ transform: "rotate(-90deg)" }}>
+                {getQuadrant("left")?.quadrantListItems.map((item, i) => (
+                  <QuadrantListItem
+                    item={item}
+                    i={i}
+                    position="left"
+                    key={i}
+                    rowClickHandler={(e) => handleRowClick(e, "left")}
+                  />
+                ))}
+              </Box>
+            </Box>
+
+            {/* Center square with triangles - dynamic colors */}
+            <Box
+              gridArea="center"
+              sx={{
+                width: 320,
+                height: 320,
+                position: "relative",
+                transformStyle: "preserve-3d",
+                willChange: "transform",
+              }}
+            >
+              {data?.quadrants?.map((q, i) => {
+                // Define clip paths for top, right, bottom, left
+                const clipPaths = [
+                  "polygon(0% 0%, 100% 0%, 50% 50%)", // top
+                  "polygon(100% 0%, 100% 100%, 50% 50%)", // right
+                  "polygon(100% 100%, 0% 100%, 50% 50%)", // bottom
+                  "polygon(0% 100%, 0% 0%, 50% 50%)", // left
+                ];
+
+                // Approximate text positions for each triangle
+                const textPositions = [
+                  { top: "2%", left: "50%", transform: "translateX(-50%)" }, // top center
+                  { top: "50%", right: "2%", transform: "translateY(-50%)" }, // right center
+                  { bottom: "2%", left: "50%", transform: "translateX(-50%)" }, // bottom center
+                  { top: "50%", left: "2%", transform: "translateY(-50%)" }, // left center
+                ];
+
+                const index = defaultPositions.indexOf(q.quadrantPosition);
+
+                return (
                   <Box
+                    key={q.quadrantName}
                     sx={{
                       position: "absolute",
-                      color: "#000",
-                      pointerEvents: "none",
-                      maxWidth: "100px",
-                      backgroundColor: "rgba(255, 255, 255, 0.7)",
-                      backdropFilter: "blur(20px)",
-                      padding: "2px 5px",
-                      textAlign: "center",
-                      fontSize:
-                        q.basePosition === "bottom" ||
-                        (q.quadrantPosition === "bottom" &&
-                          q.basePosition === "")
-                          ? "14px"
-                          : "12px",
-                      borderRadius: "8px",
-                      opacity: !hideLists ? 1 : 0,
-                      transition: !hideLists ? "opacity 2s linear" : "none",
-                      boxShadow:
-                        q.basePosition === "bottom" ||
-                        (q.quadrantPosition === "bottom" &&
-                          q.basePosition === "")
-                          ? "0 0 20px 8px rgba(54, 56, 58, 0.7)"
-                          : "none",
-                      ...textPositions[index],
-                      fontWeight:
-                        q.basePosition === "bottom" ||
-                        (q.quadrantPosition === "bottom" &&
-                          q.basePosition === "")
-                          ? "bold"
-                          : "400",
+                      width: "100%",
+                      height: "100%",
+                      clipPath: clipPaths[index],
+                      backgroundColor: alpha(q.quadrantColor, 0.6),
+                      transform: !hideLists ? "rotate(0deg)" : "rotate(180deg)",
+                      transition: !hideLists ? "transform 0.3s linear" : "none",
+                      // willChange: !hideLists
+                      //   ? "transform, clip-path"
+                      //   : "clip-path",
+                      backfaceVisibility: "hidden",
                     }}
                   >
-                    {BASE_COLOR_MAPPING[q.quadrantColor]}
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        color: "#000",
+                        pointerEvents: "none",
+                        maxWidth: "100px",
+                        backgroundColor: "rgba(255, 255, 255, 0.7)",
+                        backdropFilter: "blur(20px)",
+                        padding: "2px 5px",
+                        textAlign: "center",
+                        fontSize:
+                          q.basePosition === "bottom" ||
+                          (q.quadrantPosition === "bottom" &&
+                            q.basePosition === "")
+                            ? "14px"
+                            : "12px",
+                        borderRadius: "8px",
+                        opacity: !hideLists ? 1 : 0,
+                        transition: !hideLists ? "opacity 2s linear" : "none",
+                        boxShadow:
+                          q.basePosition === "bottom" ||
+                          (q.quadrantPosition === "bottom" &&
+                            q.basePosition === "")
+                            ? "0 0 20px 8px rgba(54, 56, 58, 0.7)"
+                            : "none",
+                        ...textPositions[index],
+                        fontWeight:
+                          q.basePosition === "bottom" ||
+                          (q.quadrantPosition === "bottom" &&
+                            q.basePosition === "")
+                            ? "bold"
+                            : "400",
+                      }}
+                    >
+                      {BASE_COLOR_MAPPING[q.quadrantColor]}
+                    </Box>
                   </Box>
+                );
+              })}
+            </Box>
+            {/* Grids for corners */}
+
+            {/* Top-Right Grid */}
+            {/* {showQuadrants?.topRight && ( */}
+            {/* TOP-LEFT QUADRANT */}
+            <Box
+              gridArea="top-left"
+              sx={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
+                gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
+                width: `${getLength("left") * cellSize}px`,
+                height: `${getLength("top") * cellSize}px`,
+                border: "none !important",
+                ...margins.topleft,
+                opacity: showQuadrants.topLeft ? 1 : 0,
+                transform: showQuadrants.topLeft ? "scale(1)" : "scale(0.95)",
+                pointerEvents: showQuadrants.topLeft ? "auto" : "none",
+                transition: "opacity 2s ease-out, transform 2s ease-out",
+                "& > div": gridCell,
+              }}
+            >
+              {noOfBoxes("top", "left").map((val, i) => (
+                <Box
+                  key={i}
+                  // title={val}
+                  sx={{
+                    border: "0.5px dashed gray !important",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => showPlotMapperPopover(e, val)}
+                >
+                  {getNewIntersections("top", "left", val)}
                 </Box>
-              );
-            })}
-          </Box>
-          {/* Grids for corners */}
+              ))}
+            </Box>
 
-          {/* Top-Right Grid */}
-          {/* {showQuadrants?.topRight && ( */}
-          {/* TOP-LEFT QUADRANT */}
-          <Box
-            gridArea="top-left"
-            sx={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
-              gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
-              width: `${getLength("left") * cellSize}px`,
-              height: `${getLength("top") * cellSize}px`,
-              border: "none !important",
-              ...margins.topleft,
-              opacity: showQuadrants.topLeft ? 1 : 0,
-              transform: showQuadrants.topLeft ? "scale(1)" : "scale(0.95)",
-              pointerEvents: showQuadrants.topLeft ? "auto" : "none",
-              transition: "opacity 2s ease-out, transform 2s ease-out",
-              "& > div": gridCell,
-            }}
-          >
-            {noOfBoxes("top", "left").map((val, i) => (
-              <Box
-                key={i}
-                // title={val}
-                sx={{
-                  border: "0.5px dashed gray !important",
-                  cursor: "pointer",
-                }}
-                onClick={(e) => showPlotMapperPopover(e, val)}
-              >
-                {getNewIntersections("top", "left", val)}
-              </Box>
-            ))}
-          </Box>
+            {/* TOP-RIGHT QUADRANT */}
+            <Box
+              gridArea="top-right"
+              sx={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
+                gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
+                width: `${getLength("right") * cellSize}px`,
+                height: `${getLength("top") * cellSize}px`,
+                border: "none !important",
+                // ...margins.rightList,
+                opacity: showQuadrants.topRight ? 1 : 0,
+                transform: showQuadrants.topRight ? "scale(1)" : "scale(0.95)",
+                pointerEvents: showQuadrants.topRight ? "auto" : "none",
+                transition: "opacity 2s ease-out, transform 2s ease-out",
+                "& > div": gridCell,
+              }}
+            >
+              {noOfBoxes("top", "right").map((val, i) => (
+                <Box
+                  key={i}
+                  // title={val}
+                  sx={{
+                    border: "0.5px dashed gray !important",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => showPlotMapperPopover(e, val)}
+                >
+                  {getNewIntersections("top", "right", val)}
+                </Box>
+              ))}
+            </Box>
 
-          {/* TOP-RIGHT QUADRANT */}
-          <Box
-            gridArea="top-right"
-            sx={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
-              gridTemplateRows: `repeat(${getLength("top")}, 1fr)`,
-              width: `${getLength("right") * cellSize}px`,
-              height: `${getLength("top") * cellSize}px`,
-              border: "none !important",
-              // ...margins.rightList,
-              opacity: showQuadrants.topRight ? 1 : 0,
-              transform: showQuadrants.topRight ? "scale(1)" : "scale(0.95)",
-              pointerEvents: showQuadrants.topRight ? "auto" : "none",
-              transition: "opacity 2s ease-out, transform 2s ease-out",
-              "& > div": gridCell,
-            }}
-          >
-            {noOfBoxes("top", "right").map((val, i) => (
-              <Box
-                key={i}
-                // title={val}
-                sx={{
-                  border: "0.5px dashed gray !important",
-                  cursor: "pointer",
-                }}
-                onClick={(e) => showPlotMapperPopover(e, val)}
-              >
-                {getNewIntersections("top", "right", val)}
-              </Box>
-            ))}
-          </Box>
+            {/* BOTTOM-LEFT QUADRANT */}
+            <Box
+              gridArea="bottom-left"
+              sx={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
+                gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
+                width: `${getLength("left") * cellSize}px`,
+                height: `${getLength("bottom") * cellSize}px`,
+                border: "none !important",
+                mt: "-30px",
+                ...margins.bottomleft,
+                opacity: showQuadrants.bottomLeft ? 1 : 0,
+                transform: showQuadrants.bottomLeft
+                  ? "scale(1)"
+                  : "scale(0.95)",
+                pointerEvents: showQuadrants.bottomLeft ? "auto" : "none",
+                transition: "opacity 2s ease-out, transform 2s ease-out",
+                "& > div": gridCell,
+              }}
+            >
+              {noOfBoxes("left", "bottom").map((val, i) => (
+                <Box
+                  key={i}
+                  // title={val}
+                  sx={{
+                    border: "0.5px dashed gray !important",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => showPlotMapperPopover(e, val)}
+                >
+                  {getNewIntersections("bottom", "left", val)}
+                </Box>
+              ))}
+            </Box>
 
-          {/* BOTTOM-LEFT QUADRANT */}
-          <Box
-            gridArea="bottom-left"
-            sx={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${getLength("left")}, 1fr)`,
-              gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
-              width: `${getLength("left") * cellSize}px`,
-              height: `${getLength("bottom") * cellSize}px`,
-              border: "none !important",
-              mt: "-30px",
-              ...margins.bottomleft,
-              opacity: showQuadrants.bottomLeft ? 1 : 0,
-              transform: showQuadrants.bottomLeft ? "scale(1)" : "scale(0.95)",
-              pointerEvents: showQuadrants.bottomLeft ? "auto" : "none",
-              transition: "opacity 2s ease-out, transform 2s ease-out",
-              "& > div": gridCell,
-            }}
-          >
-            {noOfBoxes("left", "bottom").map((val, i) => (
-              <Box
-                key={i}
-                // title={val}
-                sx={{
-                  border: "0.5px dashed gray !important",
-                  cursor: "pointer",
-                }}
-                onClick={(e) => showPlotMapperPopover(e, val)}
-              >
-                {getNewIntersections("bottom", "left", val)}
-              </Box>
-            ))}
+            {/* BOTTOM-RIGHT QUADRANT */}
+            <Box
+              gridArea="bottom-right"
+              sx={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
+                gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
+                width: `${getLength("right") * cellSize}px`,
+                height: `${getLength("bottom") * cellSize}px`,
+                border: "none !important",
+                mt: "-30px",
+                // ...margins.topright, // consider renaming if reused here
+                opacity: showQuadrants.bottomRight ? 1 : 0,
+                transform: showQuadrants.bottomRight
+                  ? "scale(1)"
+                  : "scale(0.95)",
+                pointerEvents: showQuadrants.bottomRight ? "auto" : "none",
+                transition: "opacity 2s ease-out, transform 2s ease-out",
+                "& > div": gridCell,
+              }}
+            >
+              {noOfBoxes("bottom", "right").map((val, i) => (
+                <Box
+                  key={i}
+                  // title={val}
+                  sx={{
+                    border: "0.5px dashed gray !important",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => showPlotMapperPopover(e, val)}
+                >
+                  {getNewIntersections("bottom", "right", val)}
+                </Box>
+              ))}
+            </Box>
           </Box>
-
-          {/* BOTTOM-RIGHT QUADRANT */}
-          <Box
-            gridArea="bottom-right"
-            sx={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${getLength("right")}, 1fr)`,
-              gridTemplateRows: `repeat(${getLength("bottom")}, 1fr)`,
-              width: `${getLength("right") * cellSize}px`,
-              height: `${getLength("bottom") * cellSize}px`,
-              border: "none !important",
-              mt: "-30px",
-              // ...margins.topright, // consider renaming if reused here
-              opacity: showQuadrants.bottomRight ? 1 : 0,
-              transform: showQuadrants.bottomRight ? "scale(1)" : "scale(0.95)",
-              pointerEvents: showQuadrants.bottomRight ? "auto" : "none",
-              transition: "opacity 2s ease-out, transform 2s ease-out",
-              "& > div": gridCell,
-            }}
-          >
-            {noOfBoxes("bottom", "right").map((val, i) => (
-              <Box
-                key={i}
-                // title={val}
-                sx={{
-                  border: "0.5px dashed gray !important",
-                  cursor: "pointer",
-                }}
-                onClick={(e) => showPlotMapperPopover(e, val)}
-              >
-                {getNewIntersections("bottom", "right", val)}
-              </Box>
-            ))}
-          </Box>
-        </Box>
+        {/* </Box> */}
       </Box>
       <Popover
         open={Boolean(anchorEl)}
@@ -1634,11 +1612,9 @@ const TriangleBox = () => {
               }}
               onChange={(e) => {
                 const newValue = e.target.value;
-                setSelected(newValue);
                 const selectedOption = ALL_CATEGORIES.find(
                   (opt) => opt.shortName === newValue
                 );
-                setSelectedCategory(selectedOption || null);
                 setEditDeleteTempVars((prev) => {
                   return {
                     ...prev,

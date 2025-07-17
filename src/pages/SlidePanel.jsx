@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import {
   alpha,
+  Avatar,
   Box,
   Button,
   Divider,
@@ -10,16 +11,46 @@ import {
   ListItem,
   ListItemText,
   ListSubheader,
+  MenuItem,
   Popover,
+  Select,
   TextField,
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomDialog from "./components/CustomDialog";
 import { useDispatch, useSelector } from "react-redux";
-import { Delete, Edit, Warning } from "@mui/icons-material";
+import { Delete, Edit, PriorityHigh, Warning } from "@mui/icons-material";
 import { setGlobalData } from "../redux/globalDataSlice";
 import ndgf from ".././assets/ndgf.png";
+import { ALL_CATEGORIES } from "../db/quadrantsReConstant";
+import { styled } from "@mui/system";
+
+const AnimatedBorderAvatar = styled(Box)(({ theme }) => ({
+  position: "relative",
+  display: "inline-flex",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: "8px",
+    background: "linear-gradient(45deg, #f06, #48f, #0ff, #f06)",
+    backgroundSize: "400%",
+    animation: "borderAnimation 4s linear infinite",
+    zIndex: -1,
+  },
+  "@keyframes borderAnimation": {
+    "0%": {
+      backgroundPosition: "0% 50%",
+    },
+    "100%": {
+      backgroundPosition: "400% 50%",
+    },
+  },
+}));
 
 const BASE_COLOR_MAPPING = {
   "#ff1744": "Long-Term Objectives",
@@ -40,6 +71,7 @@ const SlidePanel = () => {
     editFlag: false,
     rowText: "",
     rowObj: null,
+    category: null,
     action: null,
     isOwnerAdding: false,
     popoverTitle: "",
@@ -76,6 +108,7 @@ const SlidePanel = () => {
         isOwnerAdding: false,
         rowText: "",
         action: "",
+        category: null,
         rowObj: null,
         popoverTitle: "",
         openModal: false,
@@ -119,9 +152,16 @@ const SlidePanel = () => {
   };
 
   const cudRowHandler = () => {
-    setSomethingEdited(false);
-    const { rowText, isOwnerAdding, editFlag, popoverTitle, rowObj, action } =
-      editDeleteTempVars;
+    setSomethingEdited(null);
+    const {
+      rowText,
+      isOwnerAdding,
+      category,
+      editFlag,
+      popoverTitle,
+      rowObj,
+      action,
+    } = editDeleteTempVars;
 
     if (!rowText && action !== "clearAll") return;
 
@@ -143,6 +183,7 @@ const SlidePanel = () => {
         if (item) {
           item.rowName = rowText;
           item.rowType = isOwnerAdding ? "quandrantOwner" : "quandrantRow";
+          item.category = category ?? null;
         }
         break;
       }
@@ -168,6 +209,7 @@ const SlidePanel = () => {
             rowId: crypto.randomUUID(),
             rowType: isOwnerAdding ? "quandrantOwner" : "quandrantRow",
             rowName: rowText,
+            category,
           };
 
           // Use custom logic to decide where to insert the new row
@@ -249,6 +291,7 @@ const SlidePanel = () => {
         ...prev,
         editFlag: action === "edit",
         action: action,
+        category: item?.category ?? null,
         isOwnerAdding: item?.rowType === "quandrantOwner" || ownerBtnClick,
         rowText: action === "add" ? "" : item?.rowName,
         rowObj: item ?? null,
@@ -490,9 +533,46 @@ const SlidePanel = () => {
                                   }}
                                 />
                               </IconButton>
+                              {x?.highlightEnabled &&
+                                x?.highlight !== undefined &&
+                                x?.highlight !== null && (
+                                  <IconButton edge="end" aria-label="delete">
+                                    <AnimatedBorderAvatar>
+                                      <Avatar
+                                        variant="rounded"
+                                        sx={{
+                                          width: 20,
+                                          height: 20,
+                                          border: "2px solid transparent", // Ensures no default border interferes
+                                          background: "#fff", // Background to prevent gradient bleed
+                                        }}
+                                      >
+                                        <PriorityHigh
+                                          style={{ fontSize: 20, color : "red" }}
+                                        />
+                                      </Avatar>
+                                    </AnimatedBorderAvatar>
+                                  </IconButton>
+                                )}
                             </>
                           }
                         >
+                          {x?.category !== undefined &&
+                            x?.category !== null && (
+                              <Avatar
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  mr: 1,
+                                  background: x?.category?.colorCode,
+                                }}
+                                variant="rounded"
+                              >
+                                <Typography sx={{ fontSize: "8px" }}>
+                                  {x?.category?.shortName}
+                                </Typography>
+                              </Avatar>
+                            )}
                           <ListItemText
                             primary={x.rowName}
                             slotProps={{ primary: { fontSize: "13px", mr: 2 } }}
@@ -588,32 +668,98 @@ const SlidePanel = () => {
               </Typography>
             )}
             {editDeleteTempVars?.action !== "clearAll" && (
-              <TextField
-                size="small"
-                fullWidth
-                placeholder="Enter here..."
-                variant="outlined"
-                sx={{
-                  minWidth: "300px",
-                  "& .MuiInputBase-input": {
-                    fontSize: "13px",
-                  },
-                }}
-                multiline
-                minRows={2}
-                maxRows={3}
-                disabled={editDeleteTempVars?.action === "delete"}
-                value={editDeleteTempVars?.rowText}
-                autoFocus
-                onChange={(e) =>
-                  setEditDeleteTempVars((prev) => {
-                    return {
-                      ...prev,
-                      rowText: e.target.value,
-                    };
-                  })
-                }
-              />
+              <>
+                {!editDeleteTempVars?.isOwnerAdding && (
+                  <Select
+                    disabled={editDeleteTempVars?.action === "delete"}
+                    size="small"
+                    fullWidth
+                    // sx={{ maxWidth: 180, sx={{ zIndex: 100000000001 }} }}
+                    sx={{ zIndex: "1000000000000002 !important", mb: 1 }}
+                    value={editDeleteTempVars?.category?.shortName}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          zIndex: "1000000000000002 !important",
+                        },
+                      },
+                    }}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      const selectedOption = ALL_CATEGORIES.find(
+                        (opt) => opt.shortName === newValue
+                      );
+                      setEditDeleteTempVars((prev) => {
+                        return {
+                          ...prev,
+                          category: selectedOption,
+                        };
+                      });
+                    }}
+                    displayEmpty
+                    renderValue={(selectedValue) =>
+                      selectedValue ? (
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <span style={{ fontSize: "12px" }}>
+                            {
+                              ALL_CATEGORIES.find(
+                                (opt) => opt.shortName === selectedValue
+                              )?.label
+                            }
+                          </span>
+                        </Box>
+                      ) : (
+                        <span style={{ color: "#888", fontSize: "12px" }}>
+                          Category
+                        </span>
+                      )
+                    }
+                  >
+                    {ALL_CATEGORIES.map((option) => (
+                      <MenuItem key={option.shortName} value={option.shortName}>
+                        <ListItemText
+                          primary={option.label}
+                          slotProps={{
+                            primary: {
+                              sx: {
+                                fontSize: 12,
+                              },
+                            },
+                          }}
+                        />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+                <TextField
+                  size="small"
+                  fullWidth
+                  placeholder="Enter here..."
+                  variant="outlined"
+                  sx={{
+                    minWidth: "300px",
+                    "& .MuiInputBase-input": {
+                      fontSize: "13px",
+                    },
+                  }}
+                  multiline
+                  minRows={2}
+                  maxRows={3}
+                  disabled={editDeleteTempVars?.action === "delete"}
+                  value={editDeleteTempVars?.rowText}
+                  autoFocus
+                  onChange={(e) =>
+                    setEditDeleteTempVars((prev) => {
+                      return {
+                        ...prev,
+                        rowText: e.target.value,
+                      };
+                    })
+                  }
+                />
+              </>
             )}
 
             <Box
