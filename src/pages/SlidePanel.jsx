@@ -330,7 +330,7 @@ const SlidePanel = () => {
     top: "32%",
     left: isOpen ? `${panelWidth + 40}px` : "0px",
     transition: "left 1s ease-in-out",
-    zIndex: 10000,
+    zIndex: 999,
     padding: "8px",
     borderRadius: "0 8px 8px 0",
     border: "none",
@@ -548,7 +548,7 @@ const SlidePanel = () => {
                                         }}
                                       >
                                         <PriorityHigh
-                                          style={{ fontSize: 20, color : "red" }}
+                                          style={{ fontSize: 20, color: "red" }}
                                         />
                                       </Avatar>
                                     </AnimatedBorderAvatar>

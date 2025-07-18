@@ -31,6 +31,7 @@ import LegendComponent from "./Legend";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { styled } from "@mui/system";
+import HighlightModal from "./Highlight";
 
 const BASE_COLOR_MAPPING = {
   "#01c666": "Annual Objectives",
@@ -1726,7 +1727,7 @@ const TriangleBox = () => {
           title={drillDownViewModal?.modalTitle}
         >
           <Box sx={{ p: 1, maxHeight: "80%", overflowY: "auto" }}>
-            <img
+            {/* <img
               src={PerplexityFinance}
               alt="Perplexity Finance"
               style={{
@@ -1735,7 +1736,8 @@ const TriangleBox = () => {
                 objectFit: "cover",
                 borderRadius: "4px",
               }}
-            />
+            /> */}
+            <HighlightModal />
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
             <Button
