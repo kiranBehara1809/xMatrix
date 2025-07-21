@@ -846,7 +846,11 @@ const SlidePanel = () => {
           title={relationshipModal?.modalTitle}
         >
           <Box sx={{ p: 1, maxHeight: "80%", overflowY: "auto" }}>
-            <RelationModal />
+            <RelationModal
+              closeModal={() => {
+                setRelationshipModal((prev) => ({ ...prev, showModal: false }));
+              }}
+            />
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
             <Button
