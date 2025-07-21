@@ -26,6 +26,7 @@ import ndgf from ".././assets/ndgf.png";
 import { ALL_CATEGORIES } from "../db/quadrantsReConstant";
 import { styled } from "@mui/system";
 import { ToastContainer, toast } from "react-toastify";
+import RelationModal from "./relations";
 
 const AnimatedBorderAvatar = styled(Box)(({ theme }) => ({
   position: "relative",
@@ -68,6 +69,10 @@ const SlidePanel = () => {
   const [somethingEdited, setSomethingEdited] = useState(null);
   const [showWarning, setShowWarning] = useState(false);
   const [addNewAnchorEl, setAddNewAnchorEl] = useState(null);
+  const [relationshipModal, setRelationshipModal] = useState({
+    showModal: false,
+    modalTitle: "Quadrant Relationship",
+  });
   const [editDeleteTempVars, setEditDeleteTempVars] = useState({
     editFlag: false,
     rowText: "",
@@ -96,7 +101,7 @@ const SlidePanel = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const panelWidth = 200;
-  const panelHeight = 220;
+  const panelHeight = 300;
 
   const togglePanel = () => setIsOpen((prev) => !prev);
 
@@ -313,7 +318,7 @@ const SlidePanel = () => {
 
   const panelStyle = {
     position: "fixed",
-    top: "30%",
+    top: "25%",
     left: isOpen ? "0px" : `-${panelWidth + 40}px`,
     width: `${panelWidth}px`,
     height: `${panelHeight}px`,
@@ -376,6 +381,27 @@ const SlidePanel = () => {
             </Button>
           ))}
         </div>
+        <Divider sx={{ my: 1 }} />
+        <Typography sx={{ textAlign: "center" }} variant="body1">
+          Functions
+        </Typography>
+        <Button
+          variant="contained"
+          sx={{
+            background:
+              "linear-gradient(90deg,rgba(255, 23, 69, 0.7) 25%,rgba(1, 198, 103, 0.7) 25% 50%,rgba(41, 120, 255, 0.7) 50% 75%,rgba(255, 145, 0, 0.7) 75% 100%)",
+            m: "5px 0",
+            // fontWeight: "bold",
+            textTransform: "capitalize",
+          }}
+          fullWidth
+          onClick={() => {
+            togglePanel();
+            setRelationshipModal((prev) => ({ ...prev, showModal: true }));
+          }}
+        >
+          Relationships
+        </Button>
       </div>
 
       <Button
@@ -813,16 +839,35 @@ const SlidePanel = () => {
         </CustomDialog>
       )}
 
-      <Popover
-        open={Boolean(addNewAnchorEl)}
-        anchorEl={addNewAnchorEl}
-        onClose={() => closeAddPopover()}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        sx={{ zIndex: 100000000001 }}
-      ></Popover>
+      {relationshipModal?.showModal && (
+        <CustomDialog
+          maxWidth="xl"
+          open={true}
+          title={relationshipModal?.modalTitle}
+        >
+          <Box sx={{ p: 1, maxHeight: "80%", overflowY: "auto" }}>
+            <RelationModal />
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+            <Button
+              size="small"
+              color="error"
+              onClick={() => {
+                setRelationshipModal(() => {
+                  return {
+                    showModal: false,
+                    modalTitle: "Quadrant Relationship",
+                  };
+                });
+              }}
+              sx={{ ml: 1, textTransform: "capitalize" }}
+              variant="contained"
+            >
+              Close
+            </Button>
+          </Box>
+        </CustomDialog>
+      )}
     </>
   );
 };
