@@ -17,6 +17,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ndgf from "../../assets/ndgf.png";
 import { setGlobalData } from "../../redux/globalDataSlice";
+import CustomDialog from "../components/CustomDialog";
 
 const COMBINATIONS = {
   top: ["right", "left"],
@@ -31,6 +32,11 @@ const RelationModal = ({ closeModal = () => {} }) => {
   const [tempData, setTempData] = useState(
     JSON.parse(JSON.stringify(globalData?.quadrants))
   );
+  const [stateChanged, setStateChanged] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    showModal: false,
+    modalText: "Are you sure you want to discard changes?",
+  });
   const quadrants = globalData?.quadrants || [];
   const [sectionA, setSectionA] = useState(null);
   const [sectionB, setSectionB] = useState(null);
@@ -44,6 +50,7 @@ const RelationModal = ({ closeModal = () => {} }) => {
       setSectionA(null);
       setSectionBOptions([]);
       setNewRelations({});
+      setStateChanged(false);
     };
   }, []);
 
@@ -77,9 +84,10 @@ const RelationModal = ({ closeModal = () => {} }) => {
     const quadrantObj = tempData?.find((x) => x.quadrantName === quadrant);
     if (quadrantObj) {
       const finalRelations =
-        relations?.map((x) => {
-          return { ...x, type: "RL" };
-        }) || [];
+        relations?.map((rowId) => ({
+          rowId,
+          type: "RL",
+        })) || [];
       const updatedQuadrant = {
         ...quadrantObj,
         quadrantListItems: quadrantObj.quadrantListItems.map((row) => {
@@ -87,8 +95,12 @@ const RelationModal = ({ closeModal = () => {} }) => {
             return {
               ...row,
               intersections: [
-                ...new Set([...finalRelations, ...(row.intersections || [])]),
-              ],
+                ...new Set(
+                  [...finalRelations, ...(row.intersections || [])].map(
+                    JSON.stringify
+                  )
+                ),
+              ].map(JSON.parse),
             };
           }
           return row;
@@ -97,6 +109,7 @@ const RelationModal = ({ closeModal = () => {} }) => {
       const updatedData = tempData?.map((q) =>
         q.quadrantName === quadrant ? updatedQuadrant : q
       );
+      setStateChanged(true);
       setTempData(updatedData);
     }
   };
@@ -107,12 +120,21 @@ const RelationModal = ({ closeModal = () => {} }) => {
       const row = quadrantObj.quadrantListItems.find(
         (row) => row.rowId === item.rowId
       );
-      return row ? row.intersections || [] : [];
+      return row ? row.intersections?.map(({ rowId }) => rowId) || [] : [];
     }
     return [];
   };
 
   const saveRelations = () => {
+    // if (stateChanged) {
+    //   setConfirmModal({
+    //     showModal: true,
+    //     modalText: "Are you sure you want to discard changes?",
+    //   });
+    //   return;
+    // } else {
+    //   setConfirmModal({ showModal: false, modalText: "" });
+    // }
     if (tempData !== null) {
       dispatch(setGlobalData({ quadrants: tempData }));
       closeModal();
@@ -121,6 +143,55 @@ const RelationModal = ({ closeModal = () => {} }) => {
 
   return (
     <>
+      {confirmModal.showModal && (
+        <CustomDialog
+          open={true}
+          onClose={() => {
+            setConfirmModal({ showModal: false, modalText: "" });
+          }}
+          title={null}
+          maxWidth="xs"
+          sx={{ zIndex: 100000000000 }}
+        >
+          <Box sx={{ textAlign: "center", p: 2 }}>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              {confirmModal.modalText}
+            </Typography>
+            <Button
+              variant="contained"
+              size="small"
+              sx={{ textTransform: "capitalize", mr: 1 }}
+              onClick={() => {
+                setTempData(JSON.parse(JSON.stringify(globalData?.quadrants)));
+                setStateChanged(false);
+                setSectionA(null);
+                setSectionB(null);
+                setSectionBOptions([]);
+                setNewRelations({});
+                setConfirmModal({ showModal: false, modalText: "" });
+                closeModal();
+              }}
+            >
+              Yes, Discard
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => {
+                setStateChanged(false);
+                setConfirmModal({ showModal: false, modalText: "" });
+              }}
+              sx={{
+                textTransform: "capitalize",
+                background: "red",
+                color: "#fff",
+              }}
+            >
+              No
+            </Button>
+          </Box>
+        </CustomDialog>
+      )}
       <Grid
         container
         spacing={2}
@@ -134,6 +205,15 @@ const RelationModal = ({ closeModal = () => {} }) => {
             value={sectionA?.quadrantName || ""}
             MenuProps={{ PaperProps: { sx: { zIndex: 1000 } } }}
             onChange={(e) => {
+            //   if (stateChanged) {
+            //     setConfirmModal({
+            //       showModal: true,
+            //       modalText: "Are you sure you want to discard changes?",
+            //     });
+            //     return;
+            //   } else {
+            //     setConfirmModal({ showModal: false, modalText: "" });
+            //   }
               const newValue = e.target.value;
               const selectedOption = quadrants.find(
                 (opt) => opt?.quadrantName === newValue
@@ -191,6 +271,15 @@ const RelationModal = ({ closeModal = () => {} }) => {
             value={sectionB?.quadrantName || ""}
             MenuProps={{ PaperProps: { sx: { zIndex: 1000 } } }}
             onChange={(e) => {
+            //   if (stateChanged) {
+            //     setConfirmModal({
+            //       showModal: true,
+            //       modalText: "Are you sure you want to discard changes?",
+            //     });
+            //     return;
+            //   } else {
+            //     setConfirmModal({ showModal: false, modalText: "" });
+            //   }
               const newValue = e.target.value;
               const selectedOption = sectionBOptions.find(
                 (opt) => opt?.quadrantName === newValue
