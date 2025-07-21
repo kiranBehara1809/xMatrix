@@ -25,6 +25,7 @@ import { setGlobalData } from "../redux/globalDataSlice";
 import ndgf from ".././assets/ndgf.png";
 import { ALL_CATEGORIES } from "../db/quadrantsReConstant";
 import { styled } from "@mui/system";
+import { ToastContainer, toast } from "react-toastify";
 
 const AnimatedBorderAvatar = styled(Box)(({ theme }) => ({
   position: "relative",
@@ -163,6 +164,15 @@ const SlidePanel = () => {
       action,
     } = editDeleteTempVars;
 
+    if (category === null || category === undefined) {
+      toast.error("Please select a category for the row.");
+      return;
+    }
+    if (rowText === "" || rowText === undefined) {
+      toast.error("Please enter some description.");
+      return;
+    }
+
     if (!rowText && action !== "clearAll") return;
 
     // Deep clone to avoid mutation
@@ -283,7 +293,7 @@ const SlidePanel = () => {
     const rowType = ownerBtnClick ? "Owner" : "Item";
     let popoverTitle = `${actionLabel} Row ${rowType}`;
     if (action === "clearAll") {
-      popoverTitle = "Clear All Rows";
+      popoverTitle = null;
     }
 
     setEditDeleteTempVars((prev) => {
@@ -342,6 +352,7 @@ const SlidePanel = () => {
 
   return (
     <>
+      <ToastContainer />
       <div style={panelStyle}>
         <Typography sx={{ textAlign: "center" }} variant="body1">
           Quadrants
@@ -661,7 +672,7 @@ const SlidePanel = () => {
           maxWidth={"xs"}
           sx={{ transform: `scale(${checkZoomLevelAndIncreasePopover()})` }}
         >
-          <Box sx={{ pl: 1, pr: 1, pb: 1 }}>
+          <Box sx={{ pl: 1, pr: 1, pb: 1, pt: 1 }}>
             {editDeleteTempVars?.action === "clearAll" && (
               <Typography variant="body2">
                 Are you sure, you want to clear all records?

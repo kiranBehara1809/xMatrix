@@ -16,7 +16,7 @@ const CustomDialog = ({
   onClose,
   open,
   children,
-  title = "Custom Dialog",
+  title = null,
   maxWidth = "lg",
   sx = {},
   icon = null,
@@ -50,7 +50,7 @@ const CustomDialog = ({
       }}
       maxWidth={maxWidth}
     >
-      {icon === null && (
+      {title !== null && (
         <DialogTitle
           sx={{ textAlign: "center", lineHeight: "0.6", maxHeight: "20px" }}
         >
@@ -58,7 +58,7 @@ const CustomDialog = ({
         </DialogTitle>
       )}
       {icon !== null && (
-        <Box sx={{ display: "flex", justifyContent: "center" }}>{icon}</Box>
+        <Box sx={{ display: "flex", justifyContent: "center", padding : 1 }}>{icon}</Box>
       )}
       {children}
     </Dialog>

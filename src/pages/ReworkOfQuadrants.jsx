@@ -45,32 +45,7 @@ const AnimatedBorderBox = styled(Box)(({ theme, style, showAnimation }) => ({
   position: "relative",
   display: "inline-flex",
   background: "#fff", // Background to prevent bleed-through
-  border: 1,
   ...style,
-  ...(showAnimation && {
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      top: -2,
-      left: -2,
-      right: -2,
-      bottom: -2,
-      border: "2px solid transparent",
-      background: "linear-gradient(45deg, #f06, #48f, #0ff, #f06) border-box",
-      backgroundSize: "400%",
-      animation: "borderAnimation 4s linear infinite",
-      zIndex: -1,
-    },
-  }),
-
-  "@keyframes borderAnimation": {
-    "0%": {
-      backgroundPosition: "0% 50%",
-    },
-    "100%": {
-      backgroundPosition: "400% 50%",
-    },
-  },
 }));
 
 const MAPPING = {
@@ -106,7 +81,7 @@ const MAPPING = {
   }, // SECONDARY RESPONSIBILITY
 };
 
-const cellSize = 32;
+const cellSize = 30;
 
 function isTextOverflowing(i, position) {
   const el = document.getElementById(`${i}+${position}`);
@@ -247,11 +222,25 @@ const QuadrantListItem = ({
           // justifyContent: "space-between",
           // width: position === "bottom" ? 320 : 320,
           // borderBottom: "5px dotted #000",
-          minHeight: 32,
+          height: 30,
           // position: "relative",
           // overflow: "hidden",
         }}
       >
+        {item?.highlightEnabled &&
+          item?.highlight !== undefined &&
+          item?.highlight !== null && (
+            <style>
+              {`
+          @keyframes colorCycle {
+            0% { box-shadow: inset 0 0 10px #f06; }
+            33% { box-shadow: inset 0 0 10px #48f; }
+            66% { box-shadow: inset 0 0 10px #0ff; }
+            100% { box-shadow: inset 0 0 10px #f06; }
+          }
+        `}
+            </style>
+          )}
         <AnimatedBorderBox
           style={{
             cursor:
@@ -270,27 +259,25 @@ const QuadrantListItem = ({
               item?.highlight !== undefined &&
               item?.highlight !== null
                 ? `inset 0 0 10px ${alpha(
-                    item?.highlight?.colorCode ?? "#00000000",
+                    item?.highlight?.colorCode ?? "#f06",
                     0.6
                   )}`
+                : "inset 0 0 0 transparent",
+            transition: "box-shadow 0.3s ease", // Fallback transition
+            animation:
+              item?.highlightEnabled &&
+              item?.highlight !== undefined &&
+              item?.highlight !== null
+                ? "colorCycle 3s infinite ease-in-out"
                 : "none",
-            borderBottom: "0.5px dotted #000",
-            // borderRadius: "8px",
-            // border: "2px",
-            // position: "relative",
-            // overflow: "hidden",
+            border: "0.5px dotted #000",
           }}
-          showAnimation={
-            item?.highlight !== undefined &&
-            item?.highlight !== null &&
-            item?.highlightEnabled
-          }
         >
           {item?.category !== undefined && (
             <Avatar
               sx={{
-                width: 24,
-                height: 24,
+                width: 19,
+                height: 19,
                 ml: 0.5,
                 mr: 0.5,
                 background: item?.category?.colorCode,
@@ -333,7 +320,7 @@ const QuadrantListItem = ({
               sx={{
                 color: item.rowType === "quandrantRow" ? "#000" : "#1565c0",
                 width: position === "bottom" && item.rowName !== "" ? 320 : 320,
-                minHeight: 30,
+                // minHeight: 30,
                 fontSize: "11px",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -400,10 +387,10 @@ const QuadrantListItem = ({
       </Box>
 
       {showHighlightResetModal !== null && (
-        <CustomDialog maxWidth="xs" open={true} title={"Confirmation Modal"}>
+        <CustomDialog maxWidth="xs" open={true} title={null}>
           <Box sx={{ p: 1 }}>
             <Typography variant="body1">
-              Do you want to reset the highlight?
+              Do you want to remove the highlight?
             </Typography>
 
             <Box
@@ -487,17 +474,6 @@ const TriangleBox = () => {
     topRight: true,
     bottomRight: true,
     bottomLeft: true,
-    topLeft: true,
-  });
-
-  const [animation, setAnimation] = useState({
-    top: true,
-    topRight: true,
-    right: true,
-    bottomRight: true,
-    bottom: true,
-    bottomLeft: true,
-    left: true,
     topLeft: true,
   });
 
@@ -647,7 +623,7 @@ const TriangleBox = () => {
         }));
       });
       setHideLists(() => false);
-    }, 1500);
+    }, 2000);
   }, [data]);
 
   const getQuadrant = (pos) =>
@@ -957,6 +933,14 @@ const TriangleBox = () => {
       action,
     } = editDeleteTempVars;
 
+    if (category === null || category === undefined) {
+      toast.error("Please select a category for the row.");
+      return;
+    }
+    if (rowText === "" || rowText === undefined) {
+      toast.error("Please enter some description.");
+      return;
+    }
     // In case of delete action
     if (action === "delete" && rowObj?.rowId) {
       setData((prev) => {
@@ -1094,7 +1078,7 @@ const TriangleBox = () => {
               transition: "opacity 1.5s ease, transform 1.5s ease",
               background: "lightgray",
               //   ...margins.topright,
-              boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+              // boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
           >
             {getQuadrant("top")?.quadrantListItems.map((item, i) => (
@@ -1124,7 +1108,7 @@ const TriangleBox = () => {
               pointerEvents: !hideLists ? "auto" : "none",
               transition: "opacity 2s ease, transform 2s ease",
               // ...margins.rightList,
-              borderTop: "0.5px dotted #000",
+              // borderTop: "0.5px dotted #000",
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
             }}
           >
@@ -1156,7 +1140,7 @@ const TriangleBox = () => {
               pointerEvents: !hideLists ? "auto" : "none",
               transition: "opacity 2s ease, transform 2s ease",
               boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-              borderTop: "0.5px dotted #000",
+              // borderTop: "0.5px dotted #000",
             }}
           >
             {getQuadrant("bottom")?.quadrantListItems.map((item, i) => (
@@ -1269,10 +1253,10 @@ const TriangleBox = () => {
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
-              width: `${getLength("left") * cellSize + 4}px`,
+              width: `${getLength("left") * cellSize}px`,
               height: "320px",
               position: "relative",
-              right: "-38px",
+              right: "-39px",
               background: "lightGray",
               opacity: !hideLists ? 1 : 0,
               pointerEvents: !hideLists ? "auto" : "none",
