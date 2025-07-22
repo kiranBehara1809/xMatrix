@@ -58,7 +58,9 @@ const CustomDialog = ({
         </DialogTitle>
       )}
       {icon !== null && (
-        <Box sx={{ display: "flex", justifyContent: "center", padding : 1 }}>{icon}</Box>
+        <Box sx={{ display: "flex", justifyContent: "center", padding: 1 }}>
+          {icon}
+        </Box>
       )}
       {children}
     </Dialog>

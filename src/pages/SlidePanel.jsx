@@ -27,6 +27,7 @@ import { ALL_CATEGORIES } from "../db/quadrantsReConstant";
 import { styled } from "@mui/system";
 import { ToastContainer, toast } from "react-toastify";
 import RelationModal from "./relations";
+import NewRelationModal from "./relations/NewModal";
 
 const AnimatedBorderAvatar = styled(Box)(({ theme }) => ({
   position: "relative",
@@ -846,11 +847,12 @@ const SlidePanel = () => {
           title={relationshipModal?.modalTitle}
         >
           <Box sx={{ p: 1, maxHeight: "80%", overflowY: "auto" }}>
-            <RelationModal
+            {/* <RelationModal
               closeModal={() => {
                 setRelationshipModal((prev) => ({ ...prev, showModal: false }));
               }}
-            />
+            /> */}
+            <NewRelationModal />
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
             <Button
