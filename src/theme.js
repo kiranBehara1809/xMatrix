@@ -2,6 +2,12 @@
 import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
+  palette: {
+    mode: "light",
+  },
+  primary: {
+    main: "#0171bb",
+  },
   components: {
     MuiAccordion: {
       styleOverrides: {
@@ -44,6 +50,7 @@ const theme = createTheme({
         root: {
           boxShadow: "none", // Remove elevation shadow
           outline: "none", // Remove outline
+          background: "#0171bb",
           "&:hover": {
             boxShadow: "none", // Prevent hover shadow
             outline: "none",

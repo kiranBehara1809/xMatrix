@@ -17,6 +17,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ndgf from "../../assets/ndgf.png";
 import { setGlobalData } from "../../redux/globalDataSlice";
+import CustomDialog from "../components/CustomDialog";
 
 const COMBINATIONS = {
   top: ["right", "left"],
@@ -40,7 +41,14 @@ const NewRelationModal = () => {
   const [tempData, setTempData] = useState(
     JSON.parse(JSON.stringify(globalData?.quadrants))
   );
+  const [saveConfirmModal, setSaveConfirmModal] = useState(false);
+  const [resetConfirmModal, setResetConfirmModal] = useState(false);
+  const [switchingViewConfirmModal, setSwitchingViewConfirmModal] = useState({
+    event: null,
+    showModal: false,
+  });
   const [rhs, setRhs] = useState([]);
+  const [stateChanged, setStateChanged] = useState(false);
 
   useEffect(() => {
     if (!lhs || !loadRhs) {
@@ -73,7 +81,7 @@ const NewRelationModal = () => {
       }
     });
     setRhs(arr);
-  }, [loadRhs]);
+  }, [loadRhs, globalData]);
 
   // Handler for checkbox selection (ensures single selection)
   const handleCheckboxChange = (item, checkboxCheckedVal) => {
@@ -89,6 +97,20 @@ const NewRelationModal = () => {
       return;
     }
     setLoadRhs(() => true);
+  };
+
+  const reloadLhs = () => {
+    const selectedOption = globalData?.quadrants.find(
+      (opt) => opt?.quadrantName === lhs.quadrantName
+    );
+    const items = selectedOption?.quadrantListItems?.map((x) => ({
+      ...x,
+      checked: false,
+      mappedCount: x?.intersections?.length ?? 0,
+    }));
+    setLhs({ ...selectedOption, quadrantListItems: items });
+    setRhs([]);
+    setLoadRhs(false);
   };
 
   const handleChipClick = (item) => {
@@ -121,6 +143,30 @@ const NewRelationModal = () => {
         };
       }),
     }));
+    setStateChanged(true);
+  };
+
+  const resetAllRelations = () => {
+    // let LHS = JSON.parse(JSON.stringify(lhs));
+    // const updatedLHSQuadrants = LHS?.quadrantListItems?.map((x) => {
+    //   return {
+    //     ...x,
+    //     checked: false,
+    //     intersections: [],
+    //   };
+    // });
+    // const cloned = JSON.parse(JSON.stringify(globalData));
+    // const updatedQuadrants =
+    //   cloned?.quadrants?.map((x) =>
+    //     x.quadrantName === LHS.quadrantName
+    //       ? { ...LHS, quadrantListItems: updatedLHSQuadrants }
+    //       : x
+    //   ) || [];
+    // const updatedGlobalData = { ...cloned, quadrants: updatedQuadrants };
+    // dispatch(setGlobalData(updatedGlobalData));
+    reloadLhs();
+    setStateChanged(false);
+    setResetConfirmModal(false);
   };
 
   const saveRelations = () => {
@@ -131,6 +177,8 @@ const NewRelationModal = () => {
       ) || [];
     const updatedGlobalData = { ...cloned, quadrants: updatedQuadrants };
     dispatch(setGlobalData(updatedGlobalData));
+    setStateChanged(false);
+    setSaveConfirmModal(false);
   };
 
   const getChipIcon = (rowItem) => {
@@ -164,6 +212,10 @@ const NewRelationModal = () => {
               value={lhs?.quadrantName || ""}
               MenuProps={{ PaperProps: { sx: { zIndex: 1000 } } }}
               onChange={(e) => {
+                // if (stateChanged) {
+                //   setSwitchingViewConfirmModal({ event: e, showModal: true });
+                //   return;
+                // }
                 const newValue = e.target.value;
                 const selectedOption = globalData?.quadrants.find(
                   (opt) => opt?.quadrantName === newValue
@@ -244,12 +296,13 @@ const NewRelationModal = () => {
                 >
                   <Checkbox
                     size="small"
+                    disabled={item.rowName === ""}
                     checked={item.checked}
                     onChange={(e) =>
                       handleCheckboxChange(item, e.target.checked)
                     }
                     sx={{
-                      padding: "4px",
+                      padding: "1px",
                       "&.Mui-checked": {
                         color: "#1da9bb",
                       },
@@ -376,16 +429,172 @@ const NewRelationModal = () => {
       <Button
         size="small"
         variant="contained"
+        disabled={!stateChanged || !rhs?.length}
         sx={{
           textTransform: "capitalize",
           position: "absolute",
-          right: 90,
+          right: 80,
           bottom: 8,
         }}
-        onClick={saveRelations}
+        onClick={() => setResetConfirmModal(true)}
       >
-        Save Relations
+        Reset
       </Button>
+      <Button
+        size="small"
+        variant="contained"
+        disabled={!stateChanged || !rhs?.length}
+        sx={{
+          textTransform: "capitalize",
+          position: "absolute",
+          right: 150,
+          bottom: 8,
+        }}
+        onClick={() => setSaveConfirmModal(true)}
+      >
+        Save
+      </Button>
+
+      {saveConfirmModal && (
+        <CustomDialog
+          open={true}
+          onClose={() => {
+            setSaveConfirmModal(() => false);
+          }}
+          title={null}
+          maxWidth="xs"
+          sx={{ zIndex: 100000000000 }}
+        >
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              Are you sure you want to save the associated relations?
+            </Typography>
+            <Typography variant="body2">
+              Please review once more before proceeding
+            </Typography>
+            <Box
+              sx={{
+                mt: 2,
+                gap: 1,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{ background: "green", textTransform: "capitalize" }}
+                fullWidth
+                onClick={saveRelations}
+              >
+                Yes
+              </Button>
+              <Button
+                variant="contained"
+                sx={{ textTransform: "capitalize" }}
+                fullWidth
+                onClick={() => setSaveConfirmModal(false)}
+              >
+                No
+              </Button>
+            </Box>
+          </Box>
+        </CustomDialog>
+      )}
+
+      {resetConfirmModal && (
+        <CustomDialog
+          open={true}
+          onClose={() => {
+            setSaveConfirmModal(() => false);
+          }}
+          title={null}
+          maxWidth="xs"
+          sx={{ zIndex: 100000000000 }}
+        >
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              This will remove all relationships set against all quadrants.
+            </Typography>
+            <Typography variant="body2">
+              Are you sure you want to reset all relationships and start afresh?
+            </Typography>
+            <Box
+              sx={{
+                mt: 2,
+                gap: 1,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{ background: "green", textTransform: "capitalize" }}
+                fullWidth
+                onClick={resetAllRelations}
+              >
+                Yes
+              </Button>
+              <Button
+                variant="contained"
+                sx={{ textTransform: "capitalize" }}
+                fullWidth
+                onClick={() => setResetConfirmModal(false)}
+              >
+                No
+              </Button>
+            </Box>
+          </Box>
+        </CustomDialog>
+      )}
+
+      {switchingViewConfirmModal.showModal && (
+        <CustomDialog
+          open={true}
+          onClose={() => {
+            setSwitchingViewConfirmModal(() => {
+              return { event: null, showModal: false };
+            });
+          }}
+          title={null}
+          maxWidth="xs"
+          sx={{ zIndex: 100000000000 }}
+        >
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              You have unsaved relationship changes. Moving away will reset the
+              changes you have made right now.
+            </Typography>
+            <Typography variant="body2">
+              Are you sure you want to move away?
+            </Typography>
+            <Box
+              sx={{
+                mt: 2,
+                gap: 1,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{ background: "green", textTransform: "capitalize" }}
+                fullWidth
+                onClick={resetAllRelations}
+              >
+                Yes
+              </Button>
+              <Button
+                variant="contained"
+                sx={{ textTransform: "capitalize" }}
+                fullWidth
+                onClick={() => setResetConfirmModal(false)}
+              >
+                No
+              </Button>
+            </Box>
+          </Box>
+        </CustomDialog>
+      )}
     </>
   );
 };

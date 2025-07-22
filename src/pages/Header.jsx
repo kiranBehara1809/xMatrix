@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import { Avatar, Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
+import gmlogo from "../assets/gmlogo.png";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -15,11 +16,21 @@ const Header = () => {
     navigate("/login");
   };
   return (
-    <AppBar position="static" sx={{ width: "100%", overflow: "hidden" }}>
+    <AppBar
+      position="static"
+      sx={{ width: "100%", overflow: "hidden", background: "#0171bb" }}
+    >
       <Toolbar variant="dense">
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <img
+          src={gmlogo}
+          width={60}
+          height={40}
+          style={{ marginLeft: "-8px" }}
+        />
+        {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           X-Matrix
-        </Typography>
+        </Typography> */}
+        <span style={{ flex: 1 }}></span>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <Button
             color="primary"
@@ -55,7 +66,7 @@ const Header = () => {
             sx={{ textTransform: "capitalize", ml: 1 }}
             onClick={logouthandler}
           >
-            <LogoutIcon sx={{height :18, width :18, pr:1}}/>
+            <LogoutIcon sx={{ height: 18, width: 18, pr: 1 }} />
             Logout
           </Button>
         </Box>

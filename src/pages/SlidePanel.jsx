@@ -350,7 +350,7 @@ const SlidePanel = () => {
     padding: "8px",
     borderRadius: "0 8px 8px 0",
     border: "none",
-    backgroundColor: "#1976d2",
+    backgroundColor: "#0171bb",
     color: "#fff",
     cursor: "pointer",
     boxShadow: "2px 2px 5px rgba(0,0,0,0.2)",

@@ -916,7 +916,7 @@ const TriangleBox = () => {
       }
     });
     if (a) {
-      return MAPPING[a["type"]]?.icon ?? "";
+      return MAPPING[a?.["type"]]?.icon ?? "";
     } else {
       return "";
     }
