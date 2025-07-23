@@ -390,10 +390,11 @@ const SlidePanel = () => {
           variant="contained"
           sx={{
             background:
-              "linear-gradient(90deg,rgba(255, 23, 69, 0.7) 25%,rgba(1, 198, 103, 0.7) 25% 50%,rgba(41, 120, 255, 0.7) 50% 75%,rgba(255, 145, 0, 0.7) 75% 100%)",
+              "linear-gradient(90deg,rgba(255, 23, 69, 0.6) 25%,rgba(1, 198, 103, 0.6) 25% 50%,rgba(41, 120, 255, 0.6) 50% 75%,rgba(255, 145, 0, 0.6) 75% 100%)",
             m: "5px 0",
             // fontWeight: "bold",
             textTransform: "capitalize",
+            color: "#000",
           }}
           fullWidth
           onClick={() => {

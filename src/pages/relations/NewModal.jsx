@@ -1,4 +1,11 @@
-import { Check, Face, Face2 } from "@mui/icons-material";
+import {
+  Check,
+  Circle,
+  CircleOutlined,
+  DoNotDisturb,
+  Face,
+  Face2,
+} from "@mui/icons-material";
 import {
   Box,
   Grid,
@@ -12,13 +19,19 @@ import {
   alpha,
   Tooltip,
   Button,
+  Popover,
+  Divider,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ndgf from "../../assets/ndgf.png";
 import { setGlobalData } from "../../redux/globalDataSlice";
 import CustomDialog from "../components/CustomDialog";
 
+const QUADRANT_ROW_COLOR = "#0ad1b7";
+const QUADRANT_ROW_HOVER_COLOR = "#0ad1b745";
+const QUADRANT_OWNER_COLOR = "#ad139d";
+const QUADRANT_OWNER_HOVER_COLOR = "#ad139d63";
 const COMBINATIONS = {
   top: ["right", "left"],
   bottom: ["left"],
@@ -34,10 +47,18 @@ const COLORS = {
 };
 
 const NewRelationModal = () => {
+  const refs = useRef([]);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorPosition, setAnchorPosition] = useState(null);
+  const [openIndex, setOpenIndex] = useState(null);
   const dispatch = useDispatch();
   const [loadRhs, setLoadRhs] = useState(false);
   const [lhs, setLhs] = useState(null);
   const globalData = useSelector((state) => state.globalData.data);
+  const [selectedItem, setSelectedItem] = useState(null); // Track selected item
+  const [selectionPromiseResolver, setSelectionPromiseResolver] =
+    useState(null);
+  const [relationSelector, setRelationSelector] = useState(null);
   const [tempData, setTempData] = useState(
     JSON.parse(JSON.stringify(globalData?.quadrants))
   );
@@ -113,8 +134,13 @@ const NewRelationModal = () => {
     setLoadRhs(false);
   };
 
-  const handleChipClick = (item) => {
-    const newObj = { type: "RL", rowId: item.rowId };
+  const handleChipClick = async (item, event) => {
+    const activeRow = lhs?.quadrantListItems?.find((x) => x.checked);
+    let selectedOption = "RL";
+    if (activeRow?.rowType === "quandrantOwner") {
+      selectedOption = await openPopover(item.rowId, event);
+    }
+    const newObj = { type: selectedOption, rowId: item.rowId };
     setLhs((prev) => ({
       ...prev,
       quadrantListItems: prev?.quadrantListItems?.map((x) => {
@@ -146,6 +172,39 @@ const NewRelationModal = () => {
     setStateChanged(true);
   };
 
+  const openPopover = (rowId, event) => {
+    return new Promise((resolve) => {
+      const rect = event?.currentTarget?.getBoundingClientRect();
+      setAnchorPosition({
+        top: rect.bottom + window.scrollY, // Position below the clicked element
+        left: rect.left + window.scrollX, // Align with the left of the clicked element
+      });
+      setOpenIndex(rowId);
+      setSelectionPromiseResolver(() => resolve); // Store resolver to use on selection
+    });
+  };
+
+  const responsibilitySelector = (rowItem, option) => {
+    setSelectedItem((prev) => {
+      return {
+        ...prev,
+        [rowItem?.rowId]: option,
+      };
+    });
+    if (selectionPromiseResolver) {
+      selectionPromiseResolver(option);
+    }
+    closePopover();
+  };
+
+  const closePopover = () => {
+    setAnchorPosition(null);
+    setAnchorEl(null);
+    setOpenIndex(null);
+    setSelectionPromiseResolver(null);
+    // setSelectedItem()
+  };
+
   const resetAllRelations = () => {
     // let LHS = JSON.parse(JSON.stringify(lhs));
     // const updatedLHSQuadrants = LHS?.quadrantListItems?.map((x) => {
@@ -166,6 +225,7 @@ const NewRelationModal = () => {
     // dispatch(setGlobalData(updatedGlobalData));
     reloadLhs();
     setStateChanged(false);
+    setSelectedItem(null);
     setResetConfirmModal(false);
   };
 
@@ -178,6 +238,7 @@ const NewRelationModal = () => {
     const updatedGlobalData = { ...cloned, quadrants: updatedQuadrants };
     dispatch(setGlobalData(updatedGlobalData));
     setStateChanged(false);
+    setSelectedItem(null);
     setSaveConfirmModal(false);
   };
 
@@ -260,7 +321,7 @@ const NewRelationModal = () => {
                 display: "flex",
                 flexDirection: "column",
                 gap: 1,
-                maxHeight: "400px", // Limit height for scrollable list
+                maxHeight: "450px", // Limit height for scrollable list
                 minHeight: "auto", // Limit height for scrollable list
                 overflowY: "auto",
                 border: "1px solid #e0e0e0",
@@ -279,6 +340,14 @@ const NewRelationModal = () => {
                   <img src={ndgf} width={150} height={150} />
                 </Box>
               )}
+              {lhs?.basePosition === "right" && (
+                <Typography
+                  variant="body2"
+                  sx={{ pt: 1, pr: 1, pl: 1, fontWeight: "bold" }}
+                >
+                  Targets
+                </Typography>
+              )}
               {lhs?.quadrantListItems?.map((item, index) => (
                 <Box
                   key={index}
@@ -288,46 +357,70 @@ const NewRelationModal = () => {
                     gap: 1,
                     padding: "8px",
                     borderRadius: "4px",
+                    pointerEvents: item?.rowName === "" && "none",
+                    borderTop: item?.rowName === "" && "1.25px dashed #000",
+                    cursor: "pointer",
+                    // backgroundColor:
+                    //   item?.rowType === "quandrantOwner" ? "#cbf9f3" : "",
                     "&:hover": {
-                      backgroundColor: "#e0f7fa",
+                      backgroundColor:
+                        item?.rowType === "quandrantOwner"
+                          ? QUADRANT_OWNER_HOVER_COLOR
+                          : QUADRANT_ROW_HOVER_COLOR,
                     },
                     transition: "background-color 0.2s",
                   }}
+                  onClick={() => handleCheckboxChange(item, !item.checked)}
                 >
-                  <Checkbox
-                    size="small"
-                    disabled={item.rowName === ""}
-                    checked={item.checked}
-                    onChange={(e) =>
-                      handleCheckboxChange(item, e.target.checked)
-                    }
-                    sx={{
-                      padding: "1px",
-                      "&.Mui-checked": {
-                        color: "#1da9bb",
-                      },
-                    }}
-                  />
-                  <Typography
-                    sx={{
-                      fontSize: "12px",
-                    }}
-                  >
-                    {item.rowName}
-                    {/* {JSON.stringify(item)} */}
-                  </Typography>
-                  <span style={{ flex: 1 }}></span>
-                  <Avatar
-                    sx={{
-                      width: 20,
-                      height: 20,
-                      fontSize: "12px",
-                      background: "#1da9bb",
-                    }}
-                    variant="rounded"
-                  >
-                    {item?.mappedCount ?? 0}
-                  </Avatar>
+                  {item?.rowName === "" && (
+                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                      Owners
+                    </Typography>
+                  )}
+                  {item?.rowName !== "" && (
+                    <>
+                      <Checkbox
+                        size="small"
+                        disabled={item.rowName === ""}
+                        checked={item.checked}
+                        onChange={(e) =>
+                          handleCheckboxChange(item, e.target.checked)
+                        }
+                        sx={{
+                          padding: "1px",
+                          "&.Mui-checked": {
+                            color:
+                              item?.rowType === "quandrantOwner"
+                                ? QUADRANT_OWNER_COLOR
+                                : QUADRANT_ROW_COLOR,
+                          },
+                        }}
+                      />
+                      <Typography
+                        sx={{
+                          fontSize: "12px",
+                        }}
+                      >
+                        {item.rowName}
+                        {/* {JSON.stringify(item)} */}
+                      </Typography>
+                      <span style={{ flex: 1 }}></span>
+                      <Avatar
+                        sx={{
+                          width: 20,
+                          height: 20,
+                          fontSize: "12px",
+                          background:
+                            item?.rowType === "quandrantOwner"
+                              ? QUADRANT_OWNER_COLOR
+                              : QUADRANT_ROW_COLOR,
+                        }}
+                        variant="rounded"
+                      >
+                        {item?.mappedCount ?? 0}
+                      </Avatar>
+                    </>
+                  )}
                 </Box>
               ))}
             </Box>
@@ -346,7 +439,7 @@ const NewRelationModal = () => {
                       border: "1px dashed gray",
                       borderRadius: 1,
                       p: 1,
-                      minHeight: "450px",
+                      minHeight: "490px",
                     }}
                   >
                     <Box
@@ -380,6 +473,7 @@ const NewRelationModal = () => {
                               arrow
                             >
                               <Chip
+                                ref={(el) => (refs.current[rowItem.rowId] = el)}
                                 clickable
                                 sx={{
                                   fontSize: "11px",
@@ -389,6 +483,13 @@ const NewRelationModal = () => {
                                   border: getChipIcon(rowItem)
                                     ? "2px dashed #1da9bb"
                                     : "",
+                                  // border: getChipIcon(rowItem)
+                                  //   ? `2px dashed ${
+                                  //       rowItem?.rowType === "quandrantOwner"
+                                  //         ? QUADRANT_OWNER_COLOR
+                                  //         : QUADRANT_ROW_COLOR
+                                  //     }`
+                                  //   : "",
                                   background: alpha(
                                     COLORS[quadrantItem?.basePosition],
                                     0.1
@@ -398,11 +499,102 @@ const NewRelationModal = () => {
                                     color: "#fff",
                                   },
                                 }}
-                                onClick={() =>
-                                  handleChipClick(rowItem, quadrantItem)
+                                onClick={(e) => handleChipClick(rowItem, e)}
+                                label={
+                                  (selectedItem?.[rowItem?.rowId] !== undefined
+                                    ? `(${selectedItem?.[rowItem?.rowId]})  `
+                                    : "") + rowItem?.rowName
                                 }
-                                label={rowItem?.rowName}
                               />
+                              <Popover
+                                open={
+                                  openIndex === rowItem?.rowId &&
+                                  Boolean(anchorPosition)
+                                }
+                                anchorReference="anchorPosition"
+                                anchorPosition={anchorPosition}
+                                onClose={() => closePopover()}
+                                anchorOrigin={{
+                                  vertical: "top",
+                                  horizontal: "left",
+                                }}
+                                transformOrigin={{
+                                  vertical: "top",
+                                  horizontal: "left",
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 1,
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      cursor: "pointer",
+                                      width: "100%",
+                                      fontSize: "12px",
+                                      padding: "8px 8px 0px 8px",
+                                    }}
+                                    onClick={() =>
+                                      responsibilitySelector(rowItem, "PR")
+                                    }
+                                  >
+                                    <CircleOutlined
+                                      sx={{
+                                        width: 8,
+                                        height: 8,
+                                        pr: 2,
+                                      }}
+                                    />
+                                    Primary Responsibility
+                                  </Box>
+                                  <Divider />
+                                  <Box
+                                    sx={{
+                                      cursor: "pointer",
+                                      width: "100%",
+                                      fontSize: "12px",
+                                      padding: "0px 8px 0px 8px",
+                                    }}
+                                    onClick={() =>
+                                      responsibilitySelector(rowItem, "SR")
+                                    }
+                                  >
+                                    <Circle
+                                      sx={{
+                                        width: 8,
+                                        height: 8,
+                                        pr: 2,
+                                        color: "gray",
+                                      }}
+                                    />
+                                    Secondary Responsibility
+                                  </Box>
+                                  <Divider />
+                                  <Box
+                                    sx={{
+                                      cursor: "pointer",
+                                      width: "100%",
+                                      fontSize: "12px",
+                                      padding: "0px 8px 8px 8px",
+                                    }}
+                                    onClick={() =>
+                                      responsibilitySelector(rowItem, "")
+                                    }
+                                  >
+                                    <DoNotDisturb
+                                      sx={{
+                                        width: 8,
+                                        height: 8,
+                                        pr: 2,
+                                      }}
+                                    />
+                                    Clear
+                                  </Box>
+                                </Box>
+                              </Popover>
                             </Tooltip>
                           );
                         }
