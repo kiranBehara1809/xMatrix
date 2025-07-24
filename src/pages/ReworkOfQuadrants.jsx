@@ -853,8 +853,8 @@ const TriangleBox = () => {
   };
 
   const showPlotMapperPopover = (e, obj) => {
-    if(lockState){
-      return
+    if (lockState) {
+      return;
     }
     setAnchorEl(e.currentTarget);
     const partsOfMap = obj.split("~~X~~");
@@ -1356,12 +1356,13 @@ const TriangleBox = () => {
                       borderRadius: "8px",
                       opacity: !hideLists ? 1 : 0,
                       transition: !hideLists ? "opacity 2s linear" : "none",
-                      boxShadow:
-                        q.basePosition === "bottom" ||
-                        (q.quadrantPosition === "bottom" &&
-                          q.basePosition === "")
-                          ? "0 0 20px 8px rgba(54, 56, 58, 0.7)"
-                          : "none",
+                      boxShadow: lockState
+                        ? "none"
+                        : q.basePosition === "bottom" ||
+                          (q.quadrantPosition === "bottom" &&
+                            q.basePosition === "")
+                        ? "0 0 20px 8px rgba(54, 56, 58, 0.7)"
+                        : "none",
                       ...textPositions[index],
                       fontWeight:
                         q.basePosition === "bottom" ||
