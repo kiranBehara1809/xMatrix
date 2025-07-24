@@ -58,7 +58,7 @@ const QUADRANTS_CONSTANT = {
       updatedPosition: "",
       quadrantListItems: [
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_1",
           rowId: "7f41e5c1-98a3-4eaf-85ff-1b7f8a6ad812",
           rowType: "quandrantRow",
           sortOrder: "1",
@@ -73,7 +73,7 @@ const QUADRANTS_CONSTANT = {
           ],
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_2",
           rowId: "56ae217e-d6f2-49f1-b8d3-5cb98096c6f9",
           rowType: "quandrantRow",
           sortOrder: "2",
@@ -92,7 +92,7 @@ const QUADRANTS_CONSTANT = {
           ],
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_3",
           rowId: "1c4db07b-ff76-49c2-b8b4-eccdf8eec06f",
           rowType: "quandrantRow",
           category: CATEGORY_ONE,
@@ -108,7 +108,7 @@ const QUADRANTS_CONSTANT = {
           ],
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_4",
           rowId: "ccf7814e-7d61-44f6-8be0-df7647d37a47",
           rowType: "quandrantRow",
           sortOrder: "4",
@@ -131,14 +131,14 @@ const QUADRANTS_CONSTANT = {
       updatedPosition: "",
       quadrantListItems: [
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_1",
           rowId: "df5bd6f5-6f0f-48d4-b257-560b2ae449f4",
           rowType: "quandrantRow",
           sortOrder: "1",
           category: CATEGORY_THREE,
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_2",
           rowId: "457f56ee-64bb-41a2-ae54-2d37a325c9e3",
           rowType: "quandrantRow",
           sortOrder: "2",
@@ -147,14 +147,14 @@ const QUADRANTS_CONSTANT = {
           highlightEnabled: false,
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_3",
           rowId: "ae1bc66d-2d3a-41cc-8cde-16ef76f9bdad",
           rowType: "quandrantRow",
           sortOrder: "3",
           category: CATEGORY_FOUR,
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_4",
           rowId: "b7c6489c-c624-4a9e-8db9-c25edc65e278",
           rowType: "quandrantRow",
           sortOrder: "4",
@@ -208,7 +208,7 @@ const QUADRANTS_CONSTANT = {
           category: CATEGORY_THREE,
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_1",
           rowId: "61f1b1b8-bd02-4d8c-b84e-d857abc67c6b",
           rowType: "quandrantRow",
           sortOrder: "2",
@@ -217,14 +217,14 @@ const QUADRANTS_CONSTANT = {
           category: CATEGORY_TWO,
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_2",
           rowId: "6bc145af-94c0-42a5-b8ea-02186a18f0c2",
           rowType: "quandrantRow",
           sortOrder: "3",
           category: CATEGORY_ONE,
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_3",
           rowId: "e6fa4c1d-5d35-49b0-b47d-b14e0e3b91a6",
           rowType: "quandrantRow",
           sortOrder: "4",
@@ -241,7 +241,7 @@ const QUADRANTS_CONSTANT = {
       updatedPosition: "",
       quadrantListItems: [
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_1",
           rowId: "b91e9381-5906-470a-a9a5-fc511d93051d",
           rowType: "quandrantRow",
           sortOrder: "1",
@@ -251,7 +251,7 @@ const QUADRANTS_CONSTANT = {
           ],
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_2",
           rowId: "30b36167-c020-4c71-9405-9e5a725b66ae",
           rowType: "quandrantRow",
           sortOrder: "2",
@@ -261,7 +261,7 @@ const QUADRANTS_CONSTANT = {
           ],
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_3",
           rowId: "d05b037e-8e27-4c27-b8c9-1110833b0fc7",
           rowType: "quandrantRow",
           sortOrder: "3",
@@ -272,7 +272,7 @@ const QUADRANTS_CONSTANT = {
           ],
         },
         {
-          rowName: "For this team to add",
+          rowName: "For this team to add_4",
           rowId: "61b0afcc-0530-4c10-8a0d-75fc504e2b7f",
           rowType: "quandrantRow",
           sortOrder: "4",

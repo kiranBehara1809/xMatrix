@@ -101,7 +101,8 @@ const QuadrantListItem = ({
   const [showHighlightResetModal, setShowHighlightResetModal] = useState(null);
   const textRef = useRef(null);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1); // State to track zoom level
+  const [zoomLevel, setZoomLevel] = useState(1); // State to track zoom level\
+  const lockState = useSelector((state) => state.matrixSettings.lockState);
 
   // Function to check if text is overflowing
   const isTextOverflowing = (element) => {
@@ -253,7 +254,11 @@ const QuadrantListItem = ({
             alignItems: "center",
             justifyContent: "space-between",
             width: position === "bottom" ? 320 : 320,
-            background: position === "bottom" ? "white" : "lightgray",
+            background: lockState
+              ? "lightgray"
+              : position === "bottom"
+              ? "white"
+              : "lightgray",
             boxShadow:
               item?.highlightEnabled &&
               item?.highlight !== undefined &&
@@ -333,34 +338,37 @@ const QuadrantListItem = ({
               {item.rowName}
             </Typography>
           </Tooltip>
-          {isRowHovered && position === "bottom" && item.rowName !== "" && (
-            <>
-              <EditIcon
-                onClick={(e) => {
-                  e.stopPropagation();
-                  actionIconHanlder(e, item, "edit");
-                }}
-                sx={{
-                  fontSize: 14,
-                  cursor: "pointer",
-                  pr: "2px",
-                  color: "#1976d2",
-                }}
-              />
-              <DeleteIcon
-                onClick={(e) => {
-                  e.stopPropagation();
-                  actionIconHanlder(e, item, "delete");
-                }}
-                sx={{
-                  fontSize: 14,
-                  cursor: "pointer",
-                  pr: "2px",
-                  color: "red",
-                }}
-              />
-            </>
-          )}
+          {isRowHovered &&
+            position === "bottom" &&
+            item.rowName !== "" &&
+            !lockState && (
+              <>
+                <EditIcon
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    actionIconHanlder(e, item, "edit");
+                  }}
+                  sx={{
+                    fontSize: 14,
+                    cursor: "pointer",
+                    pr: "2px",
+                    color: "#1976d2",
+                  }}
+                />
+                <DeleteIcon
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    actionIconHanlder(e, item, "delete");
+                  }}
+                  sx={{
+                    fontSize: 14,
+                    cursor: "pointer",
+                    pr: "2px",
+                    color: "red",
+                  }}
+                />
+              </>
+            )}
 
           {item?.highlightEnabled &&
             item?.highlight !== undefined &&
@@ -433,6 +441,7 @@ const TriangleBox = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const globalData = useSelector((state) => state.globalData.data);
+  const lockState = useSelector((state) => state.matrixSettings.lockState);
 
   const dispatch = useDispatch();
   const [defaultPositions, setDefaultPositions] = useState([
@@ -844,6 +853,9 @@ const TriangleBox = () => {
   };
 
   const showPlotMapperPopover = (e, obj) => {
+    if(lockState){
+      return
+    }
     setAnchorEl(e.currentTarget);
     const partsOfMap = obj.split("~~X~~");
     const allQItems = data.quadrants?.map((x) => {
@@ -1161,6 +1173,7 @@ const TriangleBox = () => {
                 width: "100%",
                 minHeight: 30,
                 cursor: "pointer",
+                background: lockState ? "lightgray" : "none",
               }}
             >
               <Box
@@ -1171,7 +1184,7 @@ const TriangleBox = () => {
                 }}
                 onClick={(e) => {
                   const userName = localStorage.getItem("userName");
-                  if (userName === "reader") {
+                  if (userName === "reader" || lockState) {
                     return;
                   }
                   setAddNewAnchorEl(e.currentTarget);

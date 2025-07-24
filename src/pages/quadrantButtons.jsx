@@ -14,6 +14,7 @@ import IosSwitchDemo from "./components/IosSwitch";
 import { ALL_CATEGORIES, QUADRANTS_CONSTANT } from "../db/quadrantsReConstant";
 import { useDispatch, useSelector } from "react-redux";
 import { setGlobalData } from "../redux/globalDataSlice";
+import { setLockState } from "../redux/matrixSettingsSlice";
 
 // Sample Categories (replace with your real ALL_CATEGORIES)
 
@@ -64,8 +65,11 @@ const QuadrantButtons = ({
       };
     });
     dispatch(setGlobalData({ quadrants: updatedData }));
-    rerenderParent()
+    rerenderParent();
   };
+  const handleLockState = (sliderVal) => {
+    dispatch(setLockState(sliderVal))
+  }
 
   const ZOOM_STEP = 0.05;
   const MAX_ZOOM = 1.5;
@@ -108,6 +112,38 @@ const QuadrantButtons = ({
 
   return (
     <>
+      {/* Quadrant lock toggle */}
+      <div
+        style={{
+          ...containerStyle,
+          bottom: "505px",
+          right: "10px",
+          paddingBottom: "16px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "13px",
+            color: "#000",
+            width: "160px",
+            textAlign: "center",
+            marginBottom: "8px",
+          }}
+        >
+          <strong>Lock State</strong>
+        </span>
+        <Box
+          sx={{
+            width: 200,
+            display: "flex",
+            justifyContent: "center",
+            color: "#000",
+          }}
+        >
+          <IosSwitchDemo emitSliderVal={handleLockState} />
+        </Box>
+      </div>
+
       {/* External Event Toggle */}
       <div
         style={{

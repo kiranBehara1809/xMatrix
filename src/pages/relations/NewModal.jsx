@@ -285,7 +285,7 @@ const NewRelationModal = ({ setRelationshipModal }) => {
                   </Box>
                 ) : (
                   <Typography sx={{ color: "#888", fontSize: "12px" }}>
-                    Target Quadrant
+                    Select Source Quandrant
                   </Typography>
                 )
               }
@@ -322,7 +322,7 @@ const NewRelationModal = ({ setRelationshipModal }) => {
                     justifyContent: "center",
                   }}
                 >
-                  <img src={ndgf} width={150} height={150} />
+                  <img src={ndgf} width={200} height={200} />
                 </Box>
               )}
               {lhs?.basePosition === "right" && (

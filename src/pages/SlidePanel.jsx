@@ -103,8 +103,8 @@ const SlidePanel = () => {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const panelWidth = 200;
-  const panelHeight = 300;
+  const panelWidth = 240;
+  const panelHeight = 320;
 
   const togglePanel = () => setIsOpen((prev) => !prev);
 
@@ -377,6 +377,8 @@ const SlidePanel = () => {
                 background: alpha(key, 0.7),
                 m: "5px 0",
                 textTransform: "capitalize",
+                color: "#000",
+                fontWeight: "bold",
               }}
               fullWidth
             >
@@ -397,6 +399,7 @@ const SlidePanel = () => {
             // fontWeight: "bold",
             textTransform: "capitalize",
             color: "#000",
+            fontWeight: "bold",
           }}
           fullWidth
           onClick={() => {
