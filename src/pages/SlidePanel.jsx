@@ -70,6 +70,8 @@ const SlidePanel = () => {
   const [somethingEdited, setSomethingEdited] = useState(null);
   const [showWarning, setShowWarning] = useState(false);
   const [addNewAnchorEl, setAddNewAnchorEl] = useState(null);
+  const [relationModalStateChanged, setRelationModalStateChanged] =
+    useState(null);
   const [relationshipModal, setRelationshipModal] = useState({
     showModal: false,
     modalTitle: "Quadrant Relationship",
@@ -853,13 +855,16 @@ const SlidePanel = () => {
                 setRelationshipModal((prev) => ({ ...prev, showModal: false }));
               }}
             /> */}
-            <NewRelationModal />
+            <NewRelationModal setRelationshipModal={setRelationshipModal} />
           </Box>
-          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+          {/* <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
             <Button
               size="small"
               color="error"
               onClick={() => {
+                if (relationModalStateChanged) {
+                  return;
+                }
                 setRelationshipModal(() => {
                   return {
                     showModal: false,
@@ -872,7 +877,7 @@ const SlidePanel = () => {
             >
               Close
             </Button>
-          </Box>
+          </Box> */}
         </CustomDialog>
       )}
     </>

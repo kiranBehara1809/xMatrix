@@ -46,7 +46,7 @@ const COLORS = {
   right: "#ff9100",
 };
 
-const NewRelationModal = () => {
+const NewRelationModal = ({ setRelationshipModal }) => {
   const refs = useRef([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [anchorPosition, setAnchorPosition] = useState(null);
@@ -70,6 +70,8 @@ const NewRelationModal = () => {
   });
   const [rhs, setRhs] = useState([]);
   const [stateChanged, setStateChanged] = useState(false);
+  const [relationModalStateChanged, setRelationModalStateChanged] =
+    useState(false);
 
   useEffect(() => {
     if (!lhs || !loadRhs) {
@@ -206,23 +208,6 @@ const NewRelationModal = () => {
   };
 
   const resetAllRelations = () => {
-    // let LHS = JSON.parse(JSON.stringify(lhs));
-    // const updatedLHSQuadrants = LHS?.quadrantListItems?.map((x) => {
-    //   return {
-    //     ...x,
-    //     checked: false,
-    //     intersections: [],
-    //   };
-    // });
-    // const cloned = JSON.parse(JSON.stringify(globalData));
-    // const updatedQuadrants =
-    //   cloned?.quadrants?.map((x) =>
-    //     x.quadrantName === LHS.quadrantName
-    //       ? { ...LHS, quadrantListItems: updatedLHSQuadrants }
-    //       : x
-    //   ) || [];
-    // const updatedGlobalData = { ...cloned, quadrants: updatedQuadrants };
-    // dispatch(setGlobalData(updatedGlobalData));
     reloadLhs();
     setStateChanged(false);
     setSelectedItem(null);
@@ -440,6 +425,7 @@ const NewRelationModal = () => {
                       borderRadius: 1,
                       p: 1,
                       minHeight: "490px",
+                      marginBottom: "20px",
                     }}
                   >
                     <Box
@@ -501,7 +487,9 @@ const NewRelationModal = () => {
                                 }}
                                 onClick={(e) => handleChipClick(rowItem, e)}
                                 label={
-                                  (selectedItem?.[rowItem?.rowId] !== undefined
+                                  (selectedItem?.[rowItem?.rowId] !==
+                                    undefined &&
+                                  selectedItem?.[rowItem?.rowId] !== ""
                                     ? `(${selectedItem?.[rowItem?.rowId]})  `
                                     : "") + rowItem?.rowName
                                 }
@@ -646,6 +634,27 @@ const NewRelationModal = () => {
       >
         Save
       </Button>
+      <Button
+        size="small"
+        variant="contained"
+        sx={{
+          textTransform: "capitalize",
+          position: "absolute",
+          right: 10,
+          bottom: 8,
+        }}
+        onClick={() => {
+          if (stateChanged) {
+            setRelationModalStateChanged((prev) => true);
+          } else {
+            setRelationshipModal((prev) => {
+              return { ...prev, showModal: false };
+            });
+          }
+        }}
+      >
+        Close
+      </Button>
 
       {saveConfirmModal && (
         <CustomDialog
@@ -779,7 +788,63 @@ const NewRelationModal = () => {
                 variant="contained"
                 sx={{ textTransform: "capitalize" }}
                 fullWidth
-                onClick={() => setResetConfirmModal(false)}
+                onClick={() =>
+                  setSwitchingViewConfirmModal(() => {
+                    return { event: null, showModal: false };
+                  })
+                }
+              >
+                No
+              </Button>
+            </Box>
+          </Box>
+        </CustomDialog>
+      )}
+
+      {relationModalStateChanged && (
+        <CustomDialog
+          open={true}
+          onClose={() => {
+            setRelationModalStateChanged(false);
+          }}
+          title={null}
+          maxWidth="xs"
+          sx={{ zIndex: 100000000000 }}
+        >
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              You have unsaved relationship changes. Closing will reset the
+              changes you have made right now.
+            </Typography>
+            <Typography variant="body2">
+              Are you sure you want to close?
+            </Typography>
+            <Box
+              sx={{
+                mt: 2,
+                gap: 1,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{ background: "green", textTransform: "capitalize" }}
+                fullWidth
+                onClick={() => {
+                  setRelationModalStateChanged(false);
+                  setRelationshipModal((prev) => {
+                    return { ...prev, showModal: false };
+                  });
+                }}
+              >
+                Yes
+              </Button>
+              <Button
+                variant="contained"
+                sx={{ textTransform: "capitalize" }}
+                fullWidth
+                onClick={() => setRelationModalStateChanged(false)}
               >
                 No
               </Button>
