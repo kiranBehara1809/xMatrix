@@ -9,7 +9,7 @@ const Layout = () => {
   return (
     <>
       <Header />
-      <SlidePanel />
+      {/* <SlidePanel /> */}
       <Box sx={{ height: "calc(100vh - 40px)", overflow: "auto" }}>
         <TriangleBox />
       </Box>
