@@ -1347,12 +1347,13 @@ const TriangleBox = () => {
                       backdropFilter: "blur(20px)",
                       padding: "2px 5px",
                       textAlign: "center",
-                      fontSize:
-                        q.basePosition === "bottom" ||
-                        (q.quadrantPosition === "bottom" &&
-                          q.basePosition === "")
-                          ? "14px"
-                          : "12px",
+                      fontSize: lockState
+                        ? "12px"
+                        : q.basePosition === "bottom" ||
+                          (q.quadrantPosition === "bottom" &&
+                            q.basePosition === "")
+                        ? "14px"
+                        : "12px",
                       borderRadius: "8px",
                       opacity: !hideLists ? 1 : 0,
                       transition: !hideLists ? "opacity 2s linear" : "none",
@@ -1364,12 +1365,13 @@ const TriangleBox = () => {
                         ? "0 0 20px 8px rgba(54, 56, 58, 0.7)"
                         : "none",
                       ...textPositions[index],
-                      fontWeight:
-                        q.basePosition === "bottom" ||
-                        (q.quadrantPosition === "bottom" &&
-                          q.basePosition === "")
-                          ? "bold"
-                          : "400",
+                      fontWeight: lockState
+                        ? "400"
+                        : q.basePosition === "bottom" ||
+                          (q.quadrantPosition === "bottom" &&
+                            q.basePosition === "")
+                        ? "bold"
+                        : "400",
                     }}
                   >
                     {BASE_COLOR_MAPPING[q.quadrantColor]}
