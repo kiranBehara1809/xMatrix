@@ -656,8 +656,12 @@ const TriangleBox = () => {
           ...q,
           quadrantListItems:
             positions[nextIndex] === "left" || positions[nextIndex] === "right"
-              ? [...q.quadrantListItems]?.reverse()
+              ? [...q.quadrantListItems]
               : q.quadrantListItems,
+          // quadrantListItems:
+          //   positions[nextIndex] === "left" || positions[nextIndex] === "right"
+          //     ? [...q.quadrantListItems]?.reverse()
+          //     : q.quadrantListItems,
           quadrantPosition: positions[nextIndex],
           updatedPosition: positions[nextIndex],
         };
